@@ -1,0 +1,47 @@
+{
+  "name": "onboarding-server",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "nodemon -r dotenv/config --exec babel-node ./src/server.js",
+    "build": "babel src --out-dir build --copy-files",
+    "start": "node build/server.js",
+    "clean": "rimraf build"
+  },
+  "engines": {
+    "node": "15.x.x"
+  },
+  "dependencies": {
+    "@babel/cli": "^7.12.10",
+    "@babel/core": "^7.12.10",
+    "@babel/node": "^7.12.10",
+    "@babel/plugin-transform-runtime": "^7.12.10",
+    "@babel/preset-env": "^7.12.11",
+    "@fnando/keyring": "^0.4.0",
+    "@helium/crypto": "^3.7.0",
+    "@helium/transactions": "^3.30.0",
+    "bcryptjs": "^2.4.3",
+    "camelcase-keys": "^6.2.2",
+    "compression": "^1.7.4",
+    "cookie-parser": "~1.4.4",
+    "cors": "^2.8.5",
+    "date-fns": "^2.21.3",
+    "debug": "~2.6.9",
+    "dotenv": "^8.2.0",
+    "express": "~4.16.1",
+    "express-basic-auth": "^1.2.0",
+    "express-rate-limit": "^5.2.3",
+    "ioredis": "^4.19.4",
+    "morgan": "~1.9.1",
+    "pg": "^8.5.1",
+    "pg-hstore": "^2.3.3",
+    "rate-limit-redis": "^2.0.0",
+    "redis-time-series-ts": "^1.3.0",
+    "snakecase-keys": "^3.2.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.7",
+    "prettier": "^2.2.1",
+    "rimraf": "^3.0.2"
+  }
+}
