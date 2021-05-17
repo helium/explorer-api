@@ -1,10 +1,4 @@
-export const successResponse = (req, res, data, code = 200, meta) =>
-  res.send({
-    code,
-    data,
-    success: true,
-    ...(meta !== undefined && { meta }),
-  })
+export const successResponse = (req, res, data) => res.send(data)
 
 export const errorResponse = (
   req,
