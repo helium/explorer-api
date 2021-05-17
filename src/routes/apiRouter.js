@@ -50,6 +50,82 @@ export const hotspots = async (req, res) => {
   }
 }
 
+export const blocks = async (req, res) => {
+  try {
+    const range = timestampRange()
+    const agg = aggregation()
+
+    const blockCount = await redisClient.range(
+      'blocks_count',
+      range,
+      undefined,
+      agg,
+    )
+    // const longFiData = await redisClient.range('longfi_data', range, undefined, agg)
+    const electionTimeDay = await redisClient.range(
+      'election_time_day',
+      range,
+      undefined,
+      agg,
+    )
+    const blockTimeDay = await redisClient.range(
+      'block_time_day',
+      range,
+      undefined,
+      agg,
+    )
+    const blockTimeDayStdDev = await redisClient.range(
+      'block_time_day_std_dev',
+      range,
+      undefined,
+      agg,
+    )
+    const blockTimeWeek = await redisClient.range(
+      'block_time_week',
+      range,
+      undefined,
+      agg,
+    )
+    const blockTimeWeekStdDev = await redisClient.range(
+      'block_time_week_std_dev',
+      range,
+      undefined,
+      agg,
+    )
+    const blockTimeMonth = await redisClient.range(
+      'block_time_month',
+      range,
+      undefined,
+      agg,
+    )
+    const blockTimeMonthStdDev = await redisClient.range(
+      'block_time_month_std_dev',
+      range,
+      undefined,
+      agg,
+    )
+
+    const txnRate = await redisClient.range('txn_rate', range, undefined, agg)
+    const height = await redisClient.range('height', range, undefined, agg)
+    return successResponse(req, res, {
+      blockCount,
+      // longFiData,
+      electionTimeDay,
+      blockTimeDay,
+      blockTimeDayStdDev,
+      blockTimeWeek,
+      blockTimeWeekStdDev,
+      blockTimeMonth,
+      blockTimeMonthStdDev,
+      txnRate,
+      height,
+    })
+  } catch (error) {
+    errorResponse(req, res, error.message, 500, error.errors)
+  }
+}
+
 router.get('/metrics/hotspots', hotspots)
+router.get('/metrics/blocks', blocks)
 
 module.exports = router
