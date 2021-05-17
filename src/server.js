@@ -4,7 +4,7 @@
  * Module dependencies.
  */
 import app from './app'
-var debug = require('debug')('onboarding-server:server');
+var debug = require('debug')('explorer-api:server');
 var http = require('http');
 
 /**
