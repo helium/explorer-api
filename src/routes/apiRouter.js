@@ -1,6 +1,8 @@
 import express from 'express'
 import { errorResponse, successResponse } from '../helpers'
+import { getCache } from '../helpers/cache'
 import { redisClient, timestampRange, aggregation } from '../helpers/redis'
+import { fetchValidators } from '../helpers/validators'
 
 const router = express.Router()
 
@@ -125,7 +127,21 @@ export const blocks = async (req, res) => {
   }
 }
 
+const validators = async (req, res) => {
+  const validators = await getCache('validators')
+  res.status(200).send(validators || [])
+}
+
+const validator = async (req, res) => {
+  const { address } = req.params
+  const validators = await getCache('validators')
+  const validator = validators.find(v => v.address === address)
+  res.status(200).send(validator)
+}
+
 router.get('/metrics/hotspots', hotspots)
 router.get('/metrics/blocks', blocks)
+router.get('/validators', validators)
+router.get('/validators/:address', validator)
 
 module.exports = router
