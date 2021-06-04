@@ -1,6 +1,7 @@
 const fetch = require('node-fetch')
 const { fetchAll } = require('./pagination')
 const { getCache } = require('./cache')
+const camelcaseKeys = require('camelcase-keys')
 
 const asyncForEach = async (array, callback) => {
   for (let index = 0; index < array.length; index++) {
@@ -70,7 +71,7 @@ const fetchValidators = async () => {
     })
   })
 
-  return validatorsWithGeo
+  return camelcaseKeys(validatorsWithGeo)
 }
 
 module.exports = { fetchValidators }
