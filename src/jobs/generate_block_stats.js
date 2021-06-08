@@ -18,11 +18,11 @@ const generateBlockStats = async () => {
   const blockTimeDay = stats.blockTimes.lastDay.avg
   const blockTimeDayStdDev = stats.blockTimes.lastDay.stddev
 
-  const blockTimeWeek = stats.electionTimes.lastWeek.avg
-  const blockTimeWeekStdDev = stats.electionTimes.lastWeek.stddev
+  const blockTimeWeek = stats.blockTimes.lastWeek.avg
+  const blockTimeWeekStdDev = stats.blockTimes.lastWeek.stddev
 
-  const blockTimeMonth = stats.electionTimes.lastMonth.avg
-  const blockTimeMonthStdDev = stats.electionTimes.lastMonth.stddev
+  const blockTimeMonth = stats.blockTimes.lastMonth.avg
+  const blockTimeMonthStdDev = stats.blockTimes.lastMonth.stddev
 
   const electionTimeDay = stats.electionTimes.lastDay.avg
 
