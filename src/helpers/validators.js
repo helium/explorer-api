@@ -37,15 +37,15 @@ const getGeo = async (validator) => {
 
 const fetchRewards = async (address) => {
   const response = await fetch(
-    `https://testnet-api.helium.wtf/v1/validators/${address}/rewards/sum/?min_time=-30%20day`,
+    `https://api.helium.io/v1/validators/${address}/rewards/sum/?min_time=-30%20day`,
   )
   const { data } = await response.json()
   return data
 }
 
 const fetchValidators = async () => {
-  const validators = await fetchAll('/validators', undefined, 'testnet')
-  const elected = await fetchAll('/validators/elected', undefined, 'testnet')
+  const validators = await fetchAll('/validators')
+  const elected = await fetchAll('/validators/elected')
   const electedAddresses = elected.map((e) => e.address)
   const validatorsWithGeo = []
 
@@ -55,12 +55,10 @@ const fetchValidators = async () => {
     validatorsWithGeo.push({
       ...v,
       geo: geo || {},
-      // geo: {},
       elected: electedAddresses.includes(v.address),
       number: validators.length - i,
       rewards: {
         month: rewards,
-        // month: 0,
       },
     })
   })
