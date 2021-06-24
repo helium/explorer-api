@@ -52,6 +52,31 @@ export const hotspots = async (req, res) => {
   }
 }
 
+export const validatorMetrics = async (req, res) => {
+  try {
+    const range = timestampRange()
+    const agg = aggregation()
+    const count = await redisClient.range(
+      'validators_count',
+      range,
+      undefined,
+      agg,
+    )
+    const stakedPct = await redisClient.range(
+      'validators_staked_pct',
+      range,
+      undefined,
+      agg,
+    )
+    return successResponse(req, res, {
+      count,
+      stakedPct,
+    })
+  } catch (error) {
+    errorResponse(req, res, error.message, 500, error.errors)
+  }
+}
+
 export const blocks = async (req, res) => {
   try {
     const range = timestampRange()
@@ -135,12 +160,13 @@ const validators = async (req, res) => {
 const validator = async (req, res) => {
   const { address } = req.params
   const validators = await getCache('validators')
-  const validator = validators.find(v => v.address === address)
+  const validator = validators.find((v) => v.address === address)
   res.status(200).send(validator)
 }
 
 router.get('/metrics/hotspots', hotspots)
 router.get('/metrics/blocks', blocks)
+router.get('/metrics/validators', validatorMetrics)
 router.get('/validators', validators)
 router.get('/validators/:address', validator)
 
