@@ -68,9 +68,16 @@ export const validatorMetrics = async (req, res) => {
       undefined,
       agg,
     )
+    const apy = await redisClient.range(
+      'validators_apy',
+      range,
+      undefined,
+      agg,
+    )
     return successResponse(req, res, {
       count,
       stakedPct,
+      apy,
     })
   } catch (error) {
     errorResponse(req, res, error.message, 500, error.errors)
