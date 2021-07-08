@@ -164,7 +164,7 @@ const validators = async (req, res) => {
   res.status(200).send(validators || [])
 }
 
-const validators = async (req, res) => {
+const hexes = async (req, res) => {
   const hexes = await getCache('hexes')
   res.status(200).send(hexes || [])
 }
