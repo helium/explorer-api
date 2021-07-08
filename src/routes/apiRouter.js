@@ -164,6 +164,11 @@ const validators = async (req, res) => {
   res.status(200).send(validators || [])
 }
 
+const validators = async (req, res) => {
+  const hexes = await getCache('hexes')
+  res.status(200).send(hexes || [])
+}
+
 const validator = async (req, res) => {
   const { address } = req.params
   const validators = await getCache('validators')
@@ -176,5 +181,6 @@ router.get('/metrics/blocks', blocks)
 router.get('/metrics/validators', validatorMetrics)
 router.get('/validators', validators)
 router.get('/validators/:address', validator)
+router.get('/hexes', hexes)
 
 module.exports = router
