@@ -2,7 +2,7 @@ const { Client } = require('@helium/http')
 const { redisClient } = require('../helpers/redis')
 const { Sample } = require('redis-time-series-ts')
 const { fetchAll } = require('../helpers/pagination')
-const { clamp } = require('lodash')
+const { clamp, filter } = require('lodash')
 const { differenceInDays } = require('date-fns')
 
 const calculateValidatorAPY = (numValidators) => {
@@ -34,7 +34,11 @@ const generateStats = async () => {
   const apy = calculateValidatorAPY(validators.length)
 
   await redisClient.add(
-    new Sample('validators_count', validators.length, now),
+    new Sample(
+      'validators_count',
+      filter(validators, { stake_status: 'staked' }).length,
+      now,
+    ),
     [],
     0,
   )
@@ -45,11 +49,7 @@ const generateStats = async () => {
     0,
   )
 
-  await redisClient.add(
-    new Sample('validators_apy', apy, now),
-    [],
-    0,
-  )
+  await redisClient.add(new Sample('validators_apy', apy, now), [], 0)
 }
 
 const run = async () => {
