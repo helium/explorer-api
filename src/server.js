@@ -10,11 +10,8 @@ const cluster = require('cluster')
 const numCPUs = require('os').cpus().length
 
 /**
- * Get port from environment and store in Express.
+ * Normalize a port into a number, string, or false.
  */
-
-var port = normalizePort(process.env.PORT || '3001')
-app.set('port', port)
 
 function normalizePort(val) {
   var port = parseInt(val, 10)
@@ -69,9 +66,10 @@ function onListening() {
 }
 
 /**
- * Create HTTP server.
+ * Get port from environment and store in Express.
  */
-
+var port = normalizePort(process.env.PORT || '3001')
+app.set('port', port)
 
 const dev = process.env.NODE_ENV !== 'production'
 
@@ -90,18 +88,15 @@ if (!dev && cluster.isMaster) {
     )
   })
 } else {
-  console.log('server instance running')
+  /**
+   * Create HTTP server.
+   */
   var server = http.createServer(app)
 
   /**
    * Listen on provided port, on all network interfaces.
    */
-
   server.listen(port)
   server.on('error', onError)
   server.on('listening', onListening)
 }
-
-/**
- * Normalize a port into a number, string, or false.
- */
