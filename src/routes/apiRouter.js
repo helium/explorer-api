@@ -179,8 +179,8 @@ const validator = async (req, res) => {
 const accountValidators = async (req, res) => {
   const { address } = req.params
   const validators = await getCache('validators')
-  const validators = validators.filter((v) => v.owner === address)
-  res.status(200).send(validators)
+  const accountValidators = validators.filter((v) => v.owner === address)
+  res.status(200).send(accountValidators)
 }
 
 router.get('/metrics/hotspots', hotspots)
