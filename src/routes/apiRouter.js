@@ -176,11 +176,19 @@ const validator = async (req, res) => {
   res.status(200).send(validator)
 }
 
+const accountValidators = async (req, res) => {
+  const { address } = req.params
+  const validators = await getCache('validators')
+  const validators = validators.filter((v) => v.owner === address)
+  res.status(200).send(validators)
+}
+
 router.get('/metrics/hotspots', hotspots)
 router.get('/metrics/blocks', blocks)
 router.get('/metrics/validators', validatorMetrics)
 router.get('/validators', validators)
 router.get('/validators/:address', validator)
+router.get('/accounts/:address/validators', accountValidators)
 router.get('/hexes', hexes)
 
 module.exports = router
