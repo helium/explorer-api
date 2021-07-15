@@ -1,4 +1,5 @@
 import express from 'express'
+import Client from '@helium/http'
 import { errorResponse, successResponse } from '../helpers'
 import { getCache } from '../helpers/cache'
 import { redisClient, timestampRange, aggregation } from '../helpers/redis'
@@ -68,12 +69,7 @@ export const validatorMetrics = async (req, res) => {
       undefined,
       agg,
     )
-    const apy = await redisClient.range(
-      'validators_apy',
-      range,
-      undefined,
-      agg,
-    )
+    const apy = await redisClient.range('validators_apy', range, undefined, agg)
     return successResponse(req, res, {
       count,
       stakedPct,
@@ -183,12 +179,27 @@ const accountValidators = async (req, res) => {
   res.status(200).send(accountValidators)
 }
 
+const searchValidators = async (req, res) => {
+  const { term } = req.query
+  const client = new Client()
+  const list = await client.validators.search(term)
+  const matchingValidators = await list.take(20)
+  const matchingAddresses = new Set()
+  matchingValidators.forEach((v) => matchingAddresses.add(v.address))
+  const allValidators = await getCache('validators')
+  const validators = allValidators.filter((v) =>
+    matchingAddresses.has(v.address),
+  )
+  res.status(200).send(validators)
+}
+
 router.get('/metrics/hotspots', hotspots)
 router.get('/metrics/blocks', blocks)
 router.get('/metrics/validators', validatorMetrics)
 router.get('/validators', validators)
 router.get('/validators/:address', validator)
 router.get('/accounts/:address/validators', accountValidators)
+router.get('/validators/search', searchValidators)
 router.get('/hexes', hexes)
 
 module.exports = router
