@@ -1,6 +1,8 @@
 const Client = require('@helium/http').default
 const fetch = require('node-fetch')
 
+const client = new Client()
+
 const DEPRECATED_HELIUM_MAKER_ADDR =
   '14fzfjFcHpDR1rTH8BNPvSi5dKBbgxaDnmsVPbCjuq9ENjpZbxh'
 
@@ -20,88 +22,68 @@ const deprecatedHeliumMaker = {
 }
 
 const getMakersData = async () => {
-  const client = new Client()
-
   const makersResponse = await fetch(
     `https://onboarding.dewi.org/api/v2/makers`,
   )
-  const { data: makersArray } = await makersResponse.json()
-
-  // Add old Helium maker address
-  makersArray.push(deprecatedHeliumMaker)
-  makersArray.push({ address: DEPRECATED_HELIUM_BURN_ADDR })
+  const { data: dewiMakers } = await makersResponse.json()
 
   // Hide maker integration test address
-  const makers = makersArray.filter(
-    (m) => m.address !== MAKER_INTEGRATION_TEST_ADDR,
-  )
+  const makersToCount =
+    dewiMakers.filter((m) => m.address !== MAKER_INTEGRATION_TEST_ADDR)
 
-  await Promise.all(
-    makers.map(async (maker) => {
-      const makerInfo = await client.accounts.get(maker.address)
-      maker.balanceInfo = JSON.parse(JSON.stringify(makerInfo))
+  const makers = await Promise.all(makersToCount.map(calculateMakerInfo))
+  const heliumMaker = await calculateMakerInfo(deprecatedHeliumMaker)
+  const heliumAccount = await calculateMakerInfo({ address: DEPRECATED_HELIUM_BURN_ADDR })
 
-      const MAX_TXNS = 50000
-      let addGatewayTxns, assertLocationTxns
+  heliumMaker.txns.tokenBurnAmountInBones = heliumAccount.txns.tokenBurnAmountInBones
 
-      let makerTxns
-
-      if (maker.address !== DEPRECATED_HELIUM_BURN_ADDR) {
-        const txnCountsRes = await fetch(
-          `https://api.helium.io/v1/accounts/${maker.address}/activity/count?filter_types=add_gateway_v1,assert_location_v1,assert_location_v2,token_burn_v1`,
-        )
-        const txnCounts = await txnCountsRes.json()
-        assertLocationTxns =
-          txnCounts.data['assert_location_v1'] +
-          txnCounts.data['assert_location_v2']
-        addGatewayTxns = txnCounts.data['add_gateway_v1']
-
-        makerTxns = {
-          addGatewayTxns,
-          assertLocationTxns,
-        }
-      }
-
-      const tokenBurnTxnsList = await client
-        .account(maker.address)
-        .activity.list({
-          filterTypes: ['token_burn_v1'],
-        })
-
-      const tokenBurnTxns = await tokenBurnTxnsList.take(MAX_TXNS)
-
-      let tokenBurnAmountInBones = 0
-      tokenBurnTxns.map((b) => {
-        return (tokenBurnAmountInBones += b.amount.integerBalance)
-      })
-
-      makerTxns = {
-        ...makerTxns,
-        tokenBurnAmountInBones,
-      }
-
-      maker.txns = JSON.parse(JSON.stringify(makerTxns))
-
-      return maker
-    }),
-    async () => {},
-  )
-
-  return makers
+  return [...makers, heliumMaker]
 }
 
-const getMakerName = async (accountAddress) => {
-  if (!accountAddress || accountAddress === undefined) return ''
-  if (accountAddress === DEPRECATED_HELIUM_MAKER_ADDR)
-    return deprecatedHeliumMaker.name
+const calculateMakerInfo = async (maker) => {
+  const makerInfo = await client.accounts.get(maker.address)
+  maker.balanceInfo = JSON.parse(JSON.stringify(makerInfo))
 
-  const url = `https://onboarding.dewi.org/api/v2/makers`
-  const response = await fetch(url)
-  const { data: makers } = await response.json()
+  const MAX_TXNS = 50000
+  let addGatewayTxns, assertLocationTxns
 
-  const makerMatch = makers.find((m) => m.address === accountAddress)
-  const makerName = makerMatch !== undefined ? makerMatch.name : 'Unknown Maker'
-  return makerName
+  let makerTxns
+
+  if (maker.address !== DEPRECATED_HELIUM_BURN_ADDR) {
+    const txnCountsRes = await fetch(
+      `https://api.helium.io/v1/accounts/${maker.address}/activity/count?filter_types=add_gateway_v1,assert_location_v1,assert_location_v2,token_burn_v1`,
+    )
+    const txnCounts = await txnCountsRes.json()
+    assertLocationTxns =
+      txnCounts.data['assert_location_v1'] +
+      txnCounts.data['assert_location_v2']
+    addGatewayTxns = txnCounts.data['add_gateway_v1']
+
+    makerTxns = {
+      addGatewayTxns,
+      assertLocationTxns,
+    }
+  }
+
+  const tokenBurnTxnsList = await client.account(maker.address).activity.list({
+    filterTypes: ['token_burn_v1'],
+  })
+
+  const tokenBurnTxns = await tokenBurnTxnsList.take(MAX_TXNS)
+
+  let tokenBurnAmountInBones = 0
+  tokenBurnTxns.map((b) => {
+    return (tokenBurnAmountInBones += b.amount.integerBalance)
+  })
+
+  makerTxns = {
+    ...makerTxns,
+    tokenBurnAmountInBones,
+  }
+
+  maker.txns = JSON.parse(JSON.stringify(makerTxns))
+
+  return maker
 }
 
 module.exports = { getMakersData }
