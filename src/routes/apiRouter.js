@@ -193,6 +193,11 @@ const searchValidators = async (req, res) => {
   res.status(200).send(validators)
 }
 
+const makers = async (req, res) => {
+  const makers = await getCache('makers')
+  res.status(200).send(makers || [])
+}
+
 router.get('/metrics/hotspots', hotspots)
 router.get('/metrics/blocks', blocks)
 router.get('/metrics/validators', validatorMetrics)
@@ -201,5 +206,6 @@ router.get('/validators/search', searchValidators)
 router.get('/validators/:address', validator)
 router.get('/accounts/:address/validators', accountValidators)
 router.get('/hexes', hexes)
+router.get('/makers', makers)
 
 module.exports = router
