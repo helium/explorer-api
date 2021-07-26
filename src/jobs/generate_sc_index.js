@@ -91,7 +91,7 @@ const updateScIndex = async (prevScIndex) => {
 const backfillScIndex = async () => {
   console.log('backfill sc index')
 
-  const blocks = await (await client.blocks.list()).take(60)
+  const blocks = await (await client.blocks.list()).take(1000)
   const scIndex = await fetchScIndex(blocks)
 
   await setCache('scIndex', JSON.stringify(scIndex), { expires: false })
