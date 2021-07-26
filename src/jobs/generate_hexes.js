@@ -12,7 +12,7 @@ const fetchDcByHotspot = async () => {
   const txnHashes = flatten(Object.values(scIndex))
 
   for (let i = 0; i < txnHashes.length; i++) {
-    const hash = txnHashes[i];
+    const hash = txnHashes[i]
 
     const txn = await client.transactions.get(hash)
 
@@ -23,7 +23,6 @@ const fetchDcByHotspot = async () => {
         dcByHotspot[hotspot] = dc
       }
     })
-    
   }
 
   return dcByHotspot
@@ -45,7 +44,7 @@ const run = async () => {
       hex,
       count: hotspotsByHex[hex].length,
       scale: round(rewardScales.length > 0 ? mean(rewardScales) : 0, 2),
-      dc,
+      dc: dc || 0,
     }
   })
 
