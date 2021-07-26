@@ -8,7 +8,7 @@ const client = new Client()
 
 //
 // state channel index:
-// [height]: [txn, txn]
+// [height]: ['hash', 'hash']
 //
 
 const fetchHeightLimit = async (limit) => {
@@ -22,7 +22,7 @@ const fetchHeightLimit = async (limit) => {
   return height
 }
 
-const fetchScTxns = async (blocks) => {
+const fetchScIndex = async (blocks) => {
   const scTxns = []
 
   for (let i = 0; i < blocks.length; i++) {
@@ -38,7 +38,17 @@ const fetchScTxns = async (blocks) => {
     scTxns.push(...txns.filter((txn) => txn.type === 'state_channel_close_v1'))
   }
 
-  return scTxns
+  const scIndex = {}
+
+  scTxns.forEach((txn) => {
+    if (scIndex[txn.height]) {
+      scIndex[txn.height] = [...scIndex[txn.height], txn.hash]
+    } else {
+      scIndex[txn.height] = [txn.hash]
+    }
+  })
+
+  return scIndex
 }
 
 // if a cache entry exists, then we'll only walk back from the head to the latest
@@ -60,7 +70,7 @@ const updateScIndex = async (prevScIndex) => {
   )
 
   const blocks = await (await client.blocks.list()).take(blocksToTake)
-  const scTxns = await fetchScTxns(blocks)
+  const scIndex = await fetchScIndex(blocks)
 
   const heightLimit = await fetchHeightLimit({ days: 30 })
   console.log('height limit', heightLimit)
@@ -69,7 +79,6 @@ const updateScIndex = async (prevScIndex) => {
     prevScIndex,
     (v, height) => parseInt(height) >= heightLimit,
   )
-  const scIndex = groupBy(scTxns, 'height')
 
   await setCache(
     'scIndex',
@@ -82,9 +91,8 @@ const updateScIndex = async (prevScIndex) => {
 const backfillScIndex = async () => {
   console.log('backfill sc index')
 
-  const blocks = await (await client.blocks.list()).take(1000)
-  const scTxns = await fetchScTxns(blocks)
-  const scIndex = groupBy(scTxns, 'height')
+  const blocks = await (await client.blocks.list()).take(60)
+  const scIndex = await fetchScIndex(blocks)
 
   await setCache('scIndex', JSON.stringify(scIndex), { expires: false })
 }
