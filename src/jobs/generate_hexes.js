@@ -44,7 +44,7 @@ const run = async () => {
       hex,
       count: hotspotsByHex[hex].length,
       scale: round(rewardScales.length > 0 ? mean(rewardScales) : 0, 2),
-      dc: dc || 0,
+      dc,
     }
   })
 
