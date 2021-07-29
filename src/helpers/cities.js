@@ -46,8 +46,7 @@ const fetchCityPredictions = async (searchTerm) => {
     input: searchTerm,
     type: '(cities)',
   })
-  if ('predictions' in response) {
-    console.log(response.predictions)
+  if (!!response?.predictions) {
     return response.predictions.map(
       (p) => ({
         description: p.description,
