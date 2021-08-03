@@ -21,22 +21,7 @@ const fetchHeightLimit = async (limit) => {
   return height
 }
 
-const fetchScIndex = async (blocks) => {
-  const scTxns = []
-
-  for (let i = 0; i < blocks.length; i++) {
-    const block = blocks[i]
-    console.log(
-      'gettings txns for block',
-      block.height,
-      blocks.length - i,
-      'blocks to go',
-    )
-    const txns = await (await block.transactions.list()).take(10000)
-
-    scTxns.push(...txns.filter((txn) => txn.type === 'state_channel_close_v1'))
-  }
-
+const fetchScIndex = async (scTxns) => {
   const scIndex = {}
 
   scTxns.forEach((txn) => {
@@ -53,12 +38,19 @@ const fetchScIndex = async (blocks) => {
 // if no cache entry exists, then we'll walk back 1000 blocks to backfill it
 const backfillScIndex = async () => {
   console.log('backfill sc index')
-  const currentHeight = await client.blocks.getHeight()
   const heightLimit = await fetchHeightLimit({ days: 30 })
-  const blocksToFetch = currentHeight - heightLimit
 
-  const blocks = await (await client.blocks.list()).take(blocksToFetch)
-  const scIndex = await fetchScIndex(blocks)
+  const scTxns = []
+
+  for await (const txn of await client.stateChannels.list()) {
+    if (txn.height < heightLimit) {
+      break
+    }
+
+    scTxns.push(txn)
+  }
+
+  const scIndex = await fetchScIndex(scTxns)
   console.log('scIndex', scIndex)
 
   await setCache('scIndex', JSON.stringify(scIndex), { expires: false })
