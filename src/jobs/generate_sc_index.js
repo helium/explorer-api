@@ -1,6 +1,6 @@
 const { default: Client } = require('@helium/http')
 const { formatISO, sub } = require('date-fns')
-const { groupBy, max, pickBy } = require('lodash')
+const { max, pickBy, flatten } = require('lodash')
 const fetch = require('node-fetch')
 const { setCache, getCache } = require('../helpers/cache')
 
@@ -22,89 +22,75 @@ const fetchHeightLimit = async (limit) => {
   return height
 }
 
-const fetchScIndex = async (blocks) => {
-  const scTxns = []
-
-  for (let i = 0; i < blocks.length; i++) {
-    const block = blocks[i]
-    console.log(
-      'gettings txns for block',
-      block.height,
-      blocks.length - i,
-      'blocks to go',
-    )
-    const txns = await (await block.transactions.list()).take(10000)
-
-    scTxns.push(...txns.filter((txn) => txn.type === 'state_channel_close_v1'))
-  }
-
+const fetchScIndex = async (heightLimit) => {
   const scIndex = {}
 
-  scTxns.forEach((txn) => {
+  for await (const txn of await client.stateChannels.list()) {
+    if (txn.height < heightLimit) {
+      break
+    }
+
     if (scIndex[txn.height]) {
       scIndex[txn.height] = [...scIndex[txn.height], txn.hash]
     } else {
       scIndex[txn.height] = [txn.hash]
     }
-  })
+  }
 
   return scIndex
 }
 
 // if a cache entry exists, then we'll only walk back from the head to the latest
 // entry in the index
-const updateScIndex = async (prevScIndex) => {
+const updateScIndex = async () => {
   console.log('update sc index')
+  const prevScIndex = await getCache('scIndex')
 
   const prevHeight = max(Object.keys(prevScIndex))
-  const currentHeight = await client.blocks.getHeight()
-  const blocksToTake = currentHeight - prevHeight
+  const scIndex = await fetchScIndex(prevHeight)
 
-  console.log(
-    'prev height',
-    prevHeight,
-    'current height',
-    currentHeight,
-    'blocks to take',
-    blocksToTake,
-  )
-
-  const blocks = await (await client.blocks.list()).take(blocksToTake)
-  const scIndex = await fetchScIndex(blocks)
-
-  const heightLimit = await fetchHeightLimit({ days: 30 })
-  console.log('height limit', heightLimit)
+  const heightLimit = await fetchHeightLimit({ days: 7 })
 
   const limitedPrevScIndex = pickBy(
     prevScIndex,
     (v, height) => parseInt(height) >= heightLimit,
   )
 
-  await setCache(
-    'scIndex',
-    JSON.stringify({ ...limitedPrevScIndex, ...scIndex }),
-    { expires: false },
-  )
+  const newScIndex = { ...limitedPrevScIndex, ...scIndex }
+
+  await setCache('scIndex', JSON.stringify(newScIndex), { expires: false })
 }
 
-// if no cache entry exists, then we'll walk back 1000 blocks to backfill it
-const backfillScIndex = async () => {
-  console.log('backfill sc index')
+const setDcByHotspot = async () => {
+  console.log('set dc by hotspot')
+  const dcByHotspot = {}
 
-  const blocks = await (await client.blocks.list()).take(1000)
-  const scIndex = await fetchScIndex(blocks)
+  const scIndex = await getCache('scIndex')
+  const txnHashes = flatten(Object.values(scIndex))
+  console.log('txn hashes', txnHashes.length)
 
-  await setCache('scIndex', JSON.stringify(scIndex), { expires: false })
+  for (let i = 0; i < txnHashes.length; i++) {
+    const hash = txnHashes[i]
+    console.log('hash', hash, i)
+
+    const txn = await client.transactions.get(hash)
+
+    txn.stateChannel.summaries.forEach(({ client: hotspot, numDcs: dc }) => {
+      if (dcByHotspot[hotspot]) {
+        dcByHotspot[hotspot] += dc
+      } else {
+        dcByHotspot[hotspot] = dc
+      }
+    })
+  }
+  console.log(dcByHotspot)
+
+  await setCache('dcByHotspot', JSON.stringify(dcByHotspot), { expires: false })
 }
 
 const run = async () => {
-  const scIndex = await getCache('scIndex')
-
-  if (scIndex) {
-    await updateScIndex(scIndex)
-  } else {
-    await backfillScIndex()
-  }
+  await updateScIndex()
+  await setDcByHotspot()
 
   return process.exit(0)
 }

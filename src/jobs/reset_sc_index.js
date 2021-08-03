@@ -1,7 +1,8 @@
 const { default: Client } = require('@helium/http')
 const { formatISO, sub } = require('date-fns')
+const { flatten } = require('lodash')
 const fetch = require('node-fetch')
-const { setCache } = require('../helpers/cache')
+const { setCache, getCache } = require('../helpers/cache')
 
 const client = new Client()
 
@@ -9,6 +10,12 @@ const client = new Client()
 // state channel index:
 // [height]: ['hash', 'hash']
 //
+
+// const median = (arr) => {
+//   const mid = Math.floor(arr.length / 2),
+//     nums = [...arr].sort((a, b) => a - b)
+//   return arr.length % 2 !== 0 ? nums[mid] : (nums[mid - 1] + nums[mid]) / 2
+// }
 
 const fetchHeightLimit = async (limit) => {
   const timestamp = formatISO(sub(new Date(), limit))
@@ -21,10 +28,9 @@ const fetchHeightLimit = async (limit) => {
   return height
 }
 
-// if no cache entry exists, then we'll walk back 1000 blocks to backfill it
 const backfillScIndex = async () => {
   console.log('backfill sc index')
-  const heightLimit = await fetchHeightLimit({ days: 30 })
+  const heightLimit = await fetchHeightLimit({ days: 7 })
 
   const scIndex = {}
 
@@ -40,13 +46,38 @@ const backfillScIndex = async () => {
     }
   }
 
-  console.log('scIndex', scIndex)
-
   await setCache('scIndex', JSON.stringify(scIndex), { expires: false })
+}
+
+const setDcByHotspot = async () => {
+  const dcByHotspot = {}
+
+  const scIndex = await getCache('scIndex')
+  const txnHashes = flatten(Object.values(scIndex))
+  console.log('txn hashes', txnHashes.length)
+
+  for (let i = 0; i < txnHashes.length; i++) {
+    const hash = txnHashes[i]
+    console.log('hash', hash, i)
+
+    const txn = await client.transactions.get(hash)
+
+    txn.stateChannel.summaries.forEach(({ client: hotspot, numDcs: dc }) => {
+      if (dcByHotspot[hotspot]) {
+        dcByHotspot[hotspot] += dc
+      } else {
+        dcByHotspot[hotspot] = dc
+      }
+    })
+  }
+  console.log(dcByHotspot)
+
+  await setCache('dcByHotspot', JSON.stringify(dcByHotspot), { expires: false })
 }
 
 const run = async () => {
   await backfillScIndex()
+  await setDcByHotspot()
   return process.exit(0)
 }
 
