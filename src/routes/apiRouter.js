@@ -3,8 +3,7 @@ import Client from '@helium/http'
 import { errorResponse, successResponse } from '../helpers'
 import { getCache } from '../helpers/cache'
 import { redisClient, timestampRange, aggregation } from '../helpers/redis'
-import { fetchValidators } from '../helpers/validators'
-import { fetchCityPredictions, getPlaceGeography } from '../helpers/cities'
+import { fetchCitySearchGeometry } from '../helpers/cities'
 
 const router = express.Router()
 
@@ -201,15 +200,8 @@ const makers = async (req, res) => {
 
 const searchCities = async (req, res) => {
   const { term } = req.query
-  const cities = await fetchCityPredictions(term)
-  console.log('cities', cities)
+  const cities = await fetchCitySearchGeometry(term)
   res.status(200).send(cities)
-}
-
-const getCity = async (req, res) => {
-  const { placeId } = req.params
-  const placeGeography = await getPlaceGeography(placeId)
-  res.status(200).send(placeGeography)
 }
 
 router.get('/metrics/hotspots', hotspots)
@@ -222,6 +214,5 @@ router.get('/accounts/:address/validators', accountValidators)
 router.get('/hexes', hexes)
 router.get('/makers', makers)
 router.get('/cities/search', searchCities)
-router.get('/cities/:placeId', getCity)
 
 module.exports = router

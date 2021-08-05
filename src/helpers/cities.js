@@ -36,9 +36,9 @@ const makeRequest = async (route, params = {}) => {
   }
 }
 
-export const getPlaceGeography = async (placeId) => {
+export const getPlaceGeometry = async (placeId) => {
   const response = await makeRequest('details', { placeid: placeId })
-  return response.result.geometry.location
+  return response.result.geometry
 }
 
 const fetchCityPredictions = async (searchTerm) => {
@@ -47,14 +47,16 @@ const fetchCityPredictions = async (searchTerm) => {
     type: '(cities)',
   })
   if (!!response?.predictions) {
-    return response.predictions.map(
-      (p) => ({
-        description: p.description,
-        placeId: p.place_id,
-      }),
-    )
+    return response.predictions
   }
   return []
 }
 
-module.exports = { fetchCityPredictions, getPlaceGeography }
+const fetchCitySearchGeometry = async (searchTerm) => {
+  const predictions = await fetchCityPredictions(searchTerm)
+  if (predictions.length === 0) return {}
+  const geometry = await getPlaceGeometry(predictions[0].place_id)
+  return geometry
+}
+
+module.exports = { fetchCitySearchGeometry }
