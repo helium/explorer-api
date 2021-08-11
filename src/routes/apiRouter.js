@@ -219,7 +219,5 @@ router.get('/accounts/:address/validators', accountValidators)
 router.get('/hexes', hexes)
 router.get('/makers', makers)
 router.get('/cities/search', searchCities)
-router.get('/test', test)
-router.get('/cache/stats', cacheStats)
 
 module.exports = router
