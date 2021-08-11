@@ -7,7 +7,6 @@ if (process.env.REDIS_CLOUD_URL) {
 
 const getCache = async (key, fallback, opts = {}) => {
   if (redisClient) {
-    console.log('fetching redis key', key)
     const cachedValue = await redisClient.get(key)
     if (cachedValue) {
       return JSON.parse(cachedValue)
@@ -44,7 +43,6 @@ if (process.env.REDIS_URL) {
 const getHexCache = async () => {
   const key = 'hexes'
   if (hexRedisClient) {
-    console.log('fetching hex redis key', key)
     const cachedValue = await hexRedisClient.get(key)
     if (cachedValue) {
       return JSON.parse(cachedValue)
