@@ -4,6 +4,7 @@ import { errorResponse, successResponse } from '../helpers'
 import { getCache, getHexCache, setHexCache } from '../helpers/cache'
 import { redisClient, timestampRange, aggregation } from '../helpers/redis'
 import { fetchCitySearchGeometry } from '../helpers/cities'
+import { getGeo } from '../helpers/validators'
 
 const router = express.Router()
 
@@ -209,12 +210,31 @@ const searchCities = async (req, res) => {
   res.status(200).send(cities)
 }
 
+const parseB64 = (str) => {
+  const buff = Buffer.from(str, 'base64url')
+  return JSON.parse(buff)
+}
+
+const geoIp = async (req, res) => {
+  const { addrs } = req.params
+  const listenAddrs = parseB64(addrs)
+  const geo = await getGeo(listenAddrs)
+  res.status(200).send(geo)
+}
+
+const validatorVersions = async (req, res) => {
+  const versions = await getCache('validatorVersions')
+  res.status(200).send(versions || {})
+}
+
 router.get('/metrics/hotspots', hotspots)
 router.get('/metrics/blocks', blocks)
 router.get('/metrics/validators', validatorMetrics)
 router.get('/validators', validators)
 router.get('/validators/search', searchValidators)
 router.get('/validators/:address', validator)
+router.get('/validators/geo/:addrs', geoIp)
+router.get('/validators/versions', validatorVersions)
 router.get('/accounts/:address/validators', accountValidators)
 router.get('/hexes', hexes)
 router.get('/makers', makers)

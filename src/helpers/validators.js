@@ -22,8 +22,7 @@ const fetchGeo = (ipAddress) => async () => {
   return geo
 }
 
-const getGeo = async (validator) => {
-  const listenAddrs = validator?.status?.listen_addrs
+const getGeo = async (listenAddrs) => {
   if (listenAddrs && listenAddrs.length > 0) {
     const match = listenAddrs[0].match(/\ip4\/(.*)\/tcp\/2154/)
     if (match) {
@@ -50,7 +49,7 @@ const fetchValidators = async () => {
   const validatorsWithGeo = []
 
   await asyncForEach(validators, async (v, i) => {
-    const geo = await getGeo(v)
+    const geo = await getGeo(v?.status?.listen_addrs)
     const rewards = await fetchRewards(v.address)
     validatorsWithGeo.push({
       ...v,
@@ -66,4 +65,4 @@ const fetchValidators = async () => {
   return camelcaseKeys(validatorsWithGeo)
 }
 
-module.exports = { fetchValidators }
+module.exports = { fetchValidators, getGeo }
