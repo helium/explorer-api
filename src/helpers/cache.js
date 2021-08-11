@@ -1,4 +1,5 @@
 const Redis = require('ioredis')
+const url = require('url')
 
 let redisClient
 if (process.env.REDIS_CLOUD_URL) {
