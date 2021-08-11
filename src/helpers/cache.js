@@ -53,10 +53,10 @@ const getHexCache = async () => {
 }
 
 const setHexCache = async (value) => {
-  if (!redisClient) return
+  if (!hexRedisClient) return
   const key = 'hexes'
   const ttl = 60 * 5
-  await redisClient.set(key, value, 'EX', ttl)
+  await hexRedisClient.set(key, value, 'EX', ttl)
 }
 
 module.exports = { getCache, setCache, getHexCache, setHexCache }
