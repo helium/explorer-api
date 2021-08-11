@@ -212,6 +212,23 @@ const searchCities = async (req, res) => {
   res.status(200).send(cities)
 }
 
+const test = async (req, res) => {
+  let hexes
+  hexes = memCache.get('test')
+  console.log('result of get', hexes)
+  if (!hexes) {
+    console.log('fetching test')
+    hexes = [{test: 'hello'}]
+    memCache.set('test', hexes, 10)
+  }
+  res.status(200).send(hexes || [])
+}
+
+const cacheStats = async (req, res) => {
+  const stats = memCache.getStats()
+  res.status(200).send(stats)
+}
+
 router.get('/metrics/hotspots', hotspots)
 router.get('/metrics/blocks', blocks)
 router.get('/metrics/validators', validatorMetrics)
@@ -222,5 +239,7 @@ router.get('/accounts/:address/validators', accountValidators)
 router.get('/hexes', hexes)
 router.get('/makers', makers)
 router.get('/cities/search', searchCities)
+router.get('/test', test)
+router.get('/cache/stats', cacheStats)
 
 module.exports = router
