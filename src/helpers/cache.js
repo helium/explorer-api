@@ -35,4 +35,26 @@ const setCache = async (key, value, opts = {}) => {
   }
 }
 
-module.exports = { getCache, setCache }
+let hexRedisClient
+if (process.env.REDIS_URL) {
+  hexRedisClient = new Redis(process.env.REDIS_URL)
+}
+
+const getHexCache = async () => {
+  const key = 'hexes'
+  if (hexRedisClient) {
+    const cachedValue = await hexRedisClient.get(key)
+    if (cachedValue) {
+      return JSON.parse(cachedValue)
+    }
+  }
+}
+
+const setHexCache = async (value) => {
+  if (!hexRedisClient) return
+  const key = 'hexes'
+  const ttl = 60 * 5
+  await hexRedisClient.set(key, JSON.stringify(value), 'EX', ttl)
+}
+
+module.exports = { getCache, setCache, getHexCache, setHexCache }

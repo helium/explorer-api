@@ -1,7 +1,7 @@
 import express from 'express'
 import Client from '@helium/http'
 import { errorResponse, successResponse } from '../helpers'
-import { getCache } from '../helpers/cache'
+import { getCache, getHexCache, setHexCache } from '../helpers/cache'
 import { redisClient, timestampRange, aggregation } from '../helpers/redis'
 import { fetchCitySearchGeometry } from '../helpers/cities'
 
@@ -161,7 +161,12 @@ const validators = async (req, res) => {
 }
 
 const hexes = async (req, res) => {
-  const hexes = await getCache('hexes')
+  let hexes
+  hexes = await getHexCache()
+  if (!hexes) {
+    hexes = await getCache('hexes')
+    await setHexCache(hexes)
+  }
   res.status(200).send(hexes || [])
 }
 
