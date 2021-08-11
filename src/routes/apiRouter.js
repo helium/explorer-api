@@ -1,14 +1,11 @@
 import express from 'express'
 import Client from '@helium/http'
-import NodeCache from 'node-cache'
 import { errorResponse, successResponse } from '../helpers'
-import { getCache } from '../helpers/cache'
+import { getCache, getHexCache, setHexCache } from '../helpers/cache'
 import { redisClient, timestampRange, aggregation } from '../helpers/redis'
 import { fetchCitySearchGeometry } from '../helpers/cities'
 
 const router = express.Router()
-
-const memCache = new NodeCache()
 
 export const hotspots = async (req, res) => {
   try {
@@ -165,10 +162,10 @@ const validators = async (req, res) => {
 
 const hexes = async (req, res) => {
   let hexes
-  hexes = memCache.get('hexes')
+  hexes = await getHexCache()
   if (!hexes) {
     hexes = await getCache('hexes')
-    memCache.set('hexes', hexes, 60 * 5)
+    await setHexCache(hexes)
   }
   res.status(200).send(hexes || [])
 }
@@ -210,23 +207,6 @@ const searchCities = async (req, res) => {
   const { term } = req.query
   const cities = await fetchCitySearchGeometry(term)
   res.status(200).send(cities)
-}
-
-const test = async (req, res) => {
-  let hexes
-  hexes = memCache.get('test')
-  console.log('result of get', hexes)
-  if (!hexes) {
-    console.log('fetching test')
-    hexes = [{test: 'hello'}]
-    memCache.set('test', hexes, 10)
-  }
-  res.status(200).send(hexes || [])
-}
-
-const cacheStats = async (req, res) => {
-  const stats = memCache.getStats()
-  res.status(200).send(stats)
 }
 
 router.get('/metrics/hotspots', hotspots)
