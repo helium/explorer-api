@@ -35,6 +35,7 @@
     "ioredis": "^4.27.2",
     "lodash": "^4.17.21",
     "morgan": "~1.9.1",
+    "node-cache": "^5.1.2",
     "node-fetch": "^2.6.1",
     "pg": "^8.5.1",
     "pg-hstore": "^2.3.3",

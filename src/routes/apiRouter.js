@@ -1,11 +1,14 @@
 import express from 'express'
 import Client from '@helium/http'
+import NodeCache from 'node-cache'
 import { errorResponse, successResponse } from '../helpers'
 import { getCache } from '../helpers/cache'
 import { redisClient, timestampRange, aggregation } from '../helpers/redis'
 import { fetchCitySearchGeometry } from '../helpers/cities'
 
 const router = express.Router()
+
+const memCache = new NodeCache()
 
 export const hotspots = async (req, res) => {
   try {
@@ -161,7 +164,12 @@ const validators = async (req, res) => {
 }
 
 const hexes = async (req, res) => {
-  const hexes = await getCache('hexes')
+  let hexes
+  hexes = memCache.get('hexes')
+  if (!hexes) {
+    hexes = await getCache('hexes')
+    memCache.set('hexes', hexes, 60 * 5)
+  }
   res.status(200).send(hexes || [])
 }
 
