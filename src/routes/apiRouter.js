@@ -63,26 +63,38 @@ export const hotspots = async (req, res) => {
 
 export const validatorMetrics = async (req, res) => {
   try {
-    const range = timestampRange()
-    const agg = aggregation()
-    const count = await redisClient.range(
-      'validators_count',
-      range,
-      undefined,
-      agg,
+    const metrics = getCache(
+      'validators_metrics',
+      async () => {
+        const range = timestampRange()
+        const agg = aggregation()
+        const count = await redisClient.range(
+          'validators_count',
+          range,
+          undefined,
+          agg,
+        )
+        const stakedPct = await redisClient.range(
+          'validators_staked_pct',
+          range,
+          undefined,
+          agg,
+        )
+        const apy = await redisClient.range(
+          'validators_apy',
+          range,
+          undefined,
+          agg,
+        )
+        return {
+          count,
+          stakedPct,
+          apy,
+        }
+      },
+      { expires: true, ttl: 60 },
     )
-    const stakedPct = await redisClient.range(
-      'validators_staked_pct',
-      range,
-      undefined,
-      agg,
-    )
-    const apy = await redisClient.range('validators_apy', range, undefined, agg)
-    return successResponse(req, res, {
-      count,
-      stakedPct,
-      apy,
-    })
+    return successResponse(req, res, metrics)
   } catch (error) {
     errorResponse(req, res, error.message, 500, error.errors)
   }
@@ -90,74 +102,87 @@ export const validatorMetrics = async (req, res) => {
 
 export const blocks = async (req, res) => {
   try {
-    const range = timestampRange()
-    const agg = aggregation()
+    const metrics = getCache(
+      'blocks_metrics',
+      async () => {
+        const range = timestampRange()
+        const agg = aggregation()
 
-    const blockCount = await redisClient.range(
-      'blocks_count',
-      range,
-      undefined,
-      agg,
-    )
-    // const longFiData = await redisClient.range('longfi_data', range, undefined, agg)
-    const electionTimeDay = await redisClient.range(
-      'election_time_day',
-      range,
-      undefined,
-      agg,
-    )
-    const blockTimeDay = await redisClient.range(
-      'block_time_day',
-      range,
-      undefined,
-      agg,
-    )
-    const blockTimeDayStdDev = await redisClient.range(
-      'block_time_day_std_dev',
-      range,
-      undefined,
-      agg,
-    )
-    const blockTimeWeek = await redisClient.range(
-      'block_time_week',
-      range,
-      undefined,
-      agg,
-    )
-    const blockTimeWeekStdDev = await redisClient.range(
-      'block_time_week_std_dev',
-      range,
-      undefined,
-      agg,
-    )
-    const blockTimeMonth = await redisClient.range(
-      'block_time_month',
-      range,
-      undefined,
-      agg,
-    )
-    const blockTimeMonthStdDev = await redisClient.range(
-      'block_time_month_std_dev',
-      range,
-      undefined,
-      agg,
-    )
+        const blockCount = await redisClient.range(
+          'blocks_count',
+          range,
+          undefined,
+          agg,
+        )
+        // const longFiData = await redisClient.range('longfi_data', range, undefined, agg)
+        const electionTimeDay = await redisClient.range(
+          'election_time_day',
+          range,
+          undefined,
+          agg,
+        )
+        const blockTimeDay = await redisClient.range(
+          'block_time_day',
+          range,
+          undefined,
+          agg,
+        )
+        const blockTimeDayStdDev = await redisClient.range(
+          'block_time_day_std_dev',
+          range,
+          undefined,
+          agg,
+        )
+        const blockTimeWeek = await redisClient.range(
+          'block_time_week',
+          range,
+          undefined,
+          agg,
+        )
+        const blockTimeWeekStdDev = await redisClient.range(
+          'block_time_week_std_dev',
+          range,
+          undefined,
+          agg,
+        )
+        const blockTimeMonth = await redisClient.range(
+          'block_time_month',
+          range,
+          undefined,
+          agg,
+        )
+        const blockTimeMonthStdDev = await redisClient.range(
+          'block_time_month_std_dev',
+          range,
+          undefined,
+          agg,
+        )
 
-    const txnRate = await redisClient.range('txn_rate', range, undefined, agg)
-    const height = await redisClient.range('height', range, undefined, agg)
-    return successResponse(req, res, {
-      blockCount,
-      // longFiData,
-      electionTimeDay,
-      blockTimeDay,
-      blockTimeDayStdDev,
-      blockTimeWeek,
-      blockTimeWeekStdDev,
-      blockTimeMonth,
-      blockTimeMonthStdDev,
-      txnRate,
-      height,
-    })
+        const txnRate = await redisClient.range(
+          'txn_rate',
+          range,
+          undefined,
+          agg,
+        )
+        const height = await redisClient.range('height', range, undefined, agg)
+
+        return {
+          blockCount,
+          // longFiData,
+          electionTimeDay,
+          blockTimeDay,
+          blockTimeDayStdDev,
+          blockTimeWeek,
+          blockTimeWeekStdDev,
+          blockTimeMonth,
+          blockTimeMonthStdDev,
+          txnRate,
+          height,
+        }
+      },
+      { expires: true, ttl: 60 },
+    )
+    return successResponse(req, res, metrics)
   } catch (error) {
     errorResponse(req, res, error.message, 500, error.errors)
   }
