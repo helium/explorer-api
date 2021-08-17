@@ -63,7 +63,7 @@ export const hotspots = async (req, res) => {
 
 export const validatorMetrics = async (req, res) => {
   try {
-    const metrics = getCache(
+    const metrics = await getCache(
       'validators_metrics',
       async () => {
         const range = timestampRange()
@@ -102,7 +102,7 @@ export const validatorMetrics = async (req, res) => {
 
 export const blocks = async (req, res) => {
   try {
-    const metrics = getCache(
+    const metrics = await getCache(
       'blocks_metrics',
       async () => {
         const range = timestampRange()
