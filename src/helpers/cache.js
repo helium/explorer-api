@@ -20,7 +20,7 @@ const getCache = async (key, fallback, opts = {}) => {
 
   await setCache(key, JSON.stringify(freshValue), opts)
 
-  return fallback
+  return freshValue
 }
 
 const setCache = async (key, value, opts = {}) => {

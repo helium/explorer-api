@@ -10,45 +10,52 @@ const router = express.Router()
 
 export const hotspots = async (req, res) => {
   try {
-    const range = timestampRange()
-    const agg = aggregation()
-    const count = await redisClient.range(
-      'hotspots_count',
-      range,
-      undefined,
-      agg,
+    const metrics = await getCache(
+      'hotspots_metrics',
+      async () => {
+        const range = timestampRange()
+        const agg = aggregation()
+        const count = await redisClient.range(
+          'hotspots_count',
+          range,
+          undefined,
+          agg,
+        )
+        const onlinePct = await redisClient.range(
+          'hotspots_online_pct',
+          range,
+          undefined,
+          agg,
+        )
+        const ownersCount = await redisClient.range(
+          'hotspots_owners_count',
+          range,
+          undefined,
+          agg,
+        )
+        const citiesCount = await redisClient.range(
+          'hotspots_cities_count',
+          range,
+          undefined,
+          agg,
+        )
+        const countriesCount = await redisClient.range(
+          'hotspots_countries_count',
+          range,
+          undefined,
+          agg,
+        )
+        return {
+          count,
+          onlinePct,
+          ownersCount,
+          citiesCount,
+          countriesCount,
+        }
+      },
+      { expires: true, ttl: 60 },
     )
-    const onlinePct = await redisClient.range(
-      'hotspots_online_pct',
-      range,
-      undefined,
-      agg,
-    )
-    const ownersCount = await redisClient.range(
-      'hotspots_owners_count',
-      range,
-      undefined,
-      agg,
-    )
-    const citiesCount = await redisClient.range(
-      'hotspots_cities_count',
-      range,
-      undefined,
-      agg,
-    )
-    const countriesCount = await redisClient.range(
-      'hotspots_countries_count',
-      range,
-      undefined,
-      agg,
-    )
-    return successResponse(req, res, {
-      count,
-      onlinePct,
-      ownersCount,
-      citiesCount,
-      countriesCount,
-    })
+    return successResponse(req, res, metrics)
   } catch (error) {
     errorResponse(req, res, error.message, 500, error.errors)
   }
