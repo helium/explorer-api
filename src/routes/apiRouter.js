@@ -21,8 +21,20 @@ export const hotspots = async (req, res) => {
           undefined,
           agg,
         )
+        const dataOnlyCount = await redisClient.range(
+          'data_only_hotspots_count',
+          range,
+          undefined,
+          agg,
+        )
         const onlinePct = await redisClient.range(
           'hotspots_online_pct',
+          range,
+          undefined,
+          agg,
+        )
+        const dataOnlyPct = await redisClient.range(
+          'data_only_hotspots_pct',
           range,
           undefined,
           agg,
@@ -47,7 +59,9 @@ export const hotspots = async (req, res) => {
         )
         return {
           count,
+          dataOnlyCount,
           onlinePct,
+          dataOnlyPct,
           ownersCount,
           citiesCount,
           countriesCount,
