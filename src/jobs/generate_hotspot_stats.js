@@ -41,7 +41,9 @@ const generateStats = async () => {
   const hotspots = await (await client.hotspots.list()).take(200000)
   const hotspotsCount = hotspots.length
   const onlineHotspotsCount = countBy(hotspots, 'status.online')?.online
+  const dataOnlyHotspotsCount = countBy(hotspots, 'mode') === 'dataonly'
   const onlinePct = round(onlineHotspotsCount / hotspotsCount, 4)
+  const dataOnlyPct = round(dataOnlyHotspotsCount / hotspotsCount, 4)
   const ownersCount = uniqBy(hotspots, 'owner').length
   const citiesCount = uniqBy(hotspots, 'geocode.cityId').length
   const countriesCount = uniqBy(hotspots, 'geocode.shortCountry').length
@@ -50,7 +52,17 @@ const generateStats = async () => {
 
   await redisClient.add(new Sample('hotspots_count', hotspotsCount, now), [], 0)
   await redisClient.add(
+    new Sample('data_only_hotspots_count', dataOnlyHotspotsCount, now),
+    [],
+    0,
+  )
+  await redisClient.add(
     new Sample('hotspots_online_pct', onlinePct, now),
+    [],
+    0,
+  )
+  await redisClient.add(
+    new Sample('data_only_hotspots_pct', dataOnlyPct, now),
     [],
     0,
   )
