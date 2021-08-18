@@ -41,6 +41,9 @@ const generateStats = async () => {
   const hotspots = await (await client.hotspots.list()).take(200000)
   const hotspotsCount = hotspots.length
   const onlineHotspotsCount = countBy(hotspots, 'status.online')?.online
+  const {
+    counts: { hotspotsDataonly: dataOnlyHotspotsCount },
+  } = await client.stats.get()
   const dataOnlyHotspotsCount = countBy(hotspots, 'mode') === 'dataonly'
   const onlinePct = round(onlineHotspotsCount / hotspotsCount, 4)
   const dataOnlyPct = round(dataOnlyHotspotsCount / hotspotsCount, 4)
