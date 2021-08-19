@@ -5,6 +5,7 @@ import { getCache, getHexCache, setHexCache } from '../helpers/cache'
 import { redisClient, timestampRange, aggregation } from '../helpers/redis'
 import { fetchCitySearchGeometry } from '../helpers/cities'
 import { getGeo } from '../helpers/validators'
+import { fetchNetworkRewards } from '../helpers/rewards'
 
 const router = express.Router()
 
@@ -259,6 +260,21 @@ const validatorVersions = async (req, res) => {
   res.status(200).send(versions || {})
 }
 
+const networkRewards = async (req, res) => {
+  try {
+    const rewards = await getCache(
+      'networkRewards',
+      async () => {
+        return fetchNetworkRewards()
+      },
+      { expires: true, ttl: 60 * 60 },
+    )
+    return successResponse(req, res, rewards)
+  } catch (error) {
+    errorResponse(req, res, error.message, 500, error.errors)
+  }
+}
+
 router.get('/metrics/hotspots', hotspots)
 router.get('/metrics/blocks', blocks)
 router.get('/metrics/validators', validatorMetrics)
@@ -271,5 +287,6 @@ router.get('/accounts/:address/validators', accountValidators)
 router.get('/hexes', hexes)
 router.get('/makers', makers)
 router.get('/cities/search', searchCities)
+router.get('/network/rewards', networkRewards)
 
 module.exports = router
