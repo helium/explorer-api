@@ -38,7 +38,7 @@ const backfillHotspotsCount = async () => {
 
 const generateStats = async () => {
   const client = new Client(Network.staging)
-  const hotspots = await (await client.hotspots.list()).take(200000)
+  const hotspots = await (await client.hotspots.list()).take(500000)
   const hotspotsCount = hotspots.length
   const onlineHotspotsCount = countBy(hotspots, 'status.online')?.online
   const onlinePct = round(onlineHotspotsCount / hotspotsCount, 4)
