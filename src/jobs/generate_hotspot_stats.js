@@ -6,7 +6,7 @@ const { redisClient } = require('../helpers/redis')
 
 const backfillHotspotsCount = async () => {
   const client = new Client(Network.staging)
-  const hotspots = await (await client.hotspots.list()).take(200000)
+  const hotspots = await (await client.hotspots.list()).take(500000)
 
   const now = new Date()
 
