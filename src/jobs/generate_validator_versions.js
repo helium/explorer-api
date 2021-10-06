@@ -1,8 +1,7 @@
 const { setCache } = require('../helpers/cache')
 const countBy = require('lodash/countBy')
-const { default: Client } = require('@helium/http')
 
-const client = new Client()
+const { client } = require('../helpers/client')
 
 const versionCounts = (validators) => {
   const eligibleValidators = validators.filter(

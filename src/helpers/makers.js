@@ -1,7 +1,6 @@
 const Client = require('@helium/http').default
 const fetch = require('node-fetch')
-
-const client = new Client()
+const { client } = require('./client')
 
 const DEPRECATED_HELIUM_MAKER_ADDR =
   '14fzfjFcHpDR1rTH8BNPvSi5dKBbgxaDnmsVPbCjuq9ENjpZbxh'
@@ -28,14 +27,18 @@ const getMakersData = async () => {
   const { data: dewiMakers } = await makersResponse.json()
 
   // Hide maker integration test address
-  const makersToCount =
-    dewiMakers.filter((m) => m.address !== MAKER_INTEGRATION_TEST_ADDR)
+  const makersToCount = dewiMakers.filter(
+    (m) => m.address !== MAKER_INTEGRATION_TEST_ADDR,
+  )
 
   const makers = await Promise.all(makersToCount.map(calculateMakerInfo))
   const heliumMaker = await calculateMakerInfo(deprecatedHeliumMaker)
-  const heliumAccount = await calculateMakerInfo({ address: DEPRECATED_HELIUM_BURN_ADDR })
+  const heliumAccount = await calculateMakerInfo({
+    address: DEPRECATED_HELIUM_BURN_ADDR,
+  })
 
-  heliumMaker.txns.tokenBurnAmountInBones = heliumAccount.txns.tokenBurnAmountInBones
+  heliumMaker.txns.tokenBurnAmountInBones =
+    heliumAccount.txns.tokenBurnAmountInBones
 
   return [...makers, heliumMaker]
 }

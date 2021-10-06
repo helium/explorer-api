@@ -1,10 +1,8 @@
-const { default: Client } = require('@helium/http')
 const { formatISO, sub } = require('date-fns')
 const { max, pickBy, flatten } = require('lodash')
 const fetch = require('node-fetch')
 const { setCache, getCache } = require('../helpers/cache')
-
-const client = new Client()
+const { client } = require('../helpers/client')
 
 //
 // state channel index:

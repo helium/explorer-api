@@ -1,9 +1,6 @@
-const { default: Client } = require('@helium/http')
 const { groupBy, compact, mean, round, sum } = require('lodash')
 const { setCache, getCache } = require('../helpers/cache')
 const { fetchAll } = require('../helpers/pagination')
-
-const client = new Client()
 
 const run = async () => {
   const hotspots = await fetchAll('/hotspots')
