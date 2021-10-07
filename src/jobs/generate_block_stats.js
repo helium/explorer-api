@@ -28,10 +28,7 @@ const generateBlockStats = async () => {
 
   const txnRate = meanBy(latestBlocks, 'transactionCount')
 
-  const heightRes = await fetch('https://api.helium.io/v1/blocks/height')
-  const {
-    data: { height },
-  } = await heightRes.json()
+  const height = await client.blocks.getHeight()
 
   await redisClient.add(new Sample('blocks_count', blocksCount, now), [], 0)
   // await redisClient.add(new Sample('longfi_data', longFiData, now), [], 0)
