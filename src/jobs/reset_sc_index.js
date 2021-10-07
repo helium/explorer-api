@@ -1,10 +1,8 @@
-const { default: Client } = require('@helium/http')
 const { formatISO, sub } = require('date-fns')
 const { flatten } = require('lodash')
 const fetch = require('node-fetch')
 const { setCache, getCache } = require('../helpers/cache')
-
-const client = new Client()
+const { client, STAKEJOY_API_BASE_URL } = require('../helpers/client')
 
 //
 // state channel index:
@@ -20,7 +18,7 @@ const client = new Client()
 const fetchHeightLimit = async (limit) => {
   const timestamp = formatISO(sub(new Date(), limit))
   const response = await fetch(
-    `https://api.helium.io/v1/blocks/height?max_time=${timestamp}`,
+    `${STAKEJOY_API_BASE_URL}/v1/blocks/height?max_time=${timestamp}`,
   )
   const {
     data: { height },

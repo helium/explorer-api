@@ -1,13 +1,11 @@
-const { Client, Network } = require('@helium/http')
 const { meanBy } = require('lodash')
 const { Sample } = require('redis-time-series-ts')
 const { redisClient } = require('../helpers/redis')
-const fetch = require('node-fetch')
+const { client } = require('../helpers/client')
 
 const generateBlockStats = async () => {
   const now = new Date()
 
-  const client = new Client(Network.staging)
   const latestBlocks = await (await client.blocks.list()).take(100)
   const stats = await client.stats.get()
 
@@ -28,10 +26,7 @@ const generateBlockStats = async () => {
 
   const txnRate = meanBy(latestBlocks, 'transactionCount')
 
-  const heightRes = await fetch('https://api.helium.io/v1/blocks/height')
-  const {
-    data: { height },
-  } = await heightRes.json()
+  const height = await client.blocks.getHeight()
 
   await redisClient.add(new Sample('blocks_count', blocksCount, now), [], 0)
   // await redisClient.add(new Sample('longfi_data', longFiData, now), [], 0)

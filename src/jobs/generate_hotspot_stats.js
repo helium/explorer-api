@@ -1,11 +1,10 @@
-const { Client, Network } = require('@helium/http')
 const { countBy, round, uniqBy } = require('lodash')
 const { sub, compareAsc, getUnixTime } = require('date-fns')
 const { Sample } = require('redis-time-series-ts')
 const { redisClient } = require('../helpers/redis')
+const { client } = require('../helpers/client')
 
 const backfillHotspotsCount = async () => {
-  const client = new Client(Network.staging)
   const hotspots = await (await client.hotspots.list()).take(500000)
 
   const now = new Date()
@@ -37,7 +36,6 @@ const backfillHotspotsCount = async () => {
 }
 
 const generateStats = async () => {
-  const client = new Client(Network.staging)
   const hotspots = await (await client.hotspots.list()).take(500000)
   const hotspotsCount = hotspots.length
   const onlineHotspotsCount = countBy(hotspots, 'status.online')?.online

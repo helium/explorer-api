@@ -4,6 +4,7 @@ const qs = require('qs')
 const baseURLs = {
   production: 'https://api.helium.io/v1',
   testnet: 'https://testnet-api.helium.wtf/v1',
+  stakejoy: 'https://helium-api.stakejoy.com/v1',
 }
 
 const url = (path, params, cursor, network) => {
@@ -18,7 +19,7 @@ const url = (path, params, cursor, network) => {
 const fetchAll = async (
   path,
   params,
-  network = 'production',
+  network = 'stakejoy',
   acc = [],
   cursor,
 ) => {
