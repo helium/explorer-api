@@ -1,13 +1,11 @@
 const { meanBy } = require('lodash')
 const { Sample } = require('redis-time-series-ts')
 const { redisClient } = require('../helpers/redis')
-const fetch = require('node-fetch')
 const { client } = require('../helpers/client')
 
 const generateBlockStats = async () => {
   const now = new Date()
 
-  // const client = new Client(Network.staging)
   const latestBlocks = await (await client.blocks.list()).take(100)
   const stats = await client.stats.get()
 
