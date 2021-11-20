@@ -2,7 +2,7 @@ const fetch = require('node-fetch')
 const { fetchAll } = require('./pagination')
 const { getCache } = require('./cache')
 const camelcaseKeys = require('camelcase-keys')
-const { STAKEJOY_API_BASE_URL } = require('./client')
+const { API_BASE_URL } = require('./client')
 
 const asyncForEach = async (array, callback) => {
   for (let index = 0; index < array.length; index++) {
@@ -37,7 +37,7 @@ const getGeo = async (listenAddrs) => {
 
 const fetchRewards = async (address) => {
   const response = await fetch(
-    `${STAKEJOY_API_BASE_URL}/v1/validators/${address}/rewards/sum/?min_time=-30%20day`,
+    `${API_BASE_URL}/v1/validators/${address}/rewards/sum/?min_time=-30%20day`,
   )
   const { data } = await response.json()
   return data

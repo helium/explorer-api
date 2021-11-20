@@ -8,9 +8,6 @@
     "start": "node build/server.js",
     "clean": "rimraf build"
   },
-  "engines": {
-    "node": "15.x.x"
-  },
   "dependencies": {
     "@babel/cli": "^7.12.10",
     "@babel/core": "^7.12.10",
