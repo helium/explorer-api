@@ -1,14 +1,10 @@
 const fetch = require('node-fetch')
 const qs = require('qs')
 
-const baseURLs = {
-  production: 'https://api.helium.io/v1',
-  testnet: 'https://testnet-api.helium.wtf/v1',
-  stakejoy: 'https://helium-api.stakejoy.com/v1',
-}
+const API_BASE_URL = process.env.API_BASE_URL + '/v1'
 
-const url = (path, params, cursor, network) => {
-  let fullURL = baseURLs[network] + path
+const url = (path, params, cursor) => {
+  let fullURL = API_BASE_URL + path
   if (params || cursor) {
     params = qs.stringify({ ...params, cursor })
     fullURL += `?${params}`
@@ -19,16 +15,15 @@ const url = (path, params, cursor, network) => {
 const fetchAll = async (
   path,
   params,
-  network = 'stakejoy',
   acc = [],
   cursor,
 ) => {
-  const response = await fetch(url(path, params, cursor, network))
+  const response = await fetch(url(path, params, cursor))
   const { data, cursor: nextCursor } = await response.json()
   const accData = [...acc, ...data]
 
   if (nextCursor) {
-    const nextData = await fetchAll(path, params, network, accData, nextCursor)
+    const nextData = await fetchAll(path, params, accData, nextCursor)
     return nextData
   }
 

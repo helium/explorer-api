@@ -1,11 +1,11 @@
 const { default: Client, Network } = require('@helium/http')
 
 const TAKE_MAX = 100000
-const STAKEJOY_API_BASE_URL = 'https://helium-api.stakejoy.com'
+const API_BASE_URL = process.env.API_BASE_URL
 
 const client = new Client(
-  new Network({ baseURL: STAKEJOY_API_BASE_URL, version: 1 }),
+  new Network({ baseURL: API_BASE_URL, version: 1 }),
   { retry: 3 },
 )
 
-module.exports = { client, TAKE_MAX, STAKEJOY_API_BASE_URL }
+module.exports = { client, TAKE_MAX, API_BASE_URL }

@@ -1,5 +1,5 @@
 const fetch = require('node-fetch')
-const { client, STAKEJOY_API_BASE_URL } = require('./client')
+const { client, API_BASE_URL } = require('./client')
 
 const DEPRECATED_HELIUM_MAKER_ADDR =
   '14fzfjFcHpDR1rTH8BNPvSi5dKBbgxaDnmsVPbCjuq9ENjpZbxh'
@@ -53,7 +53,7 @@ const calculateMakerInfo = async (maker) => {
 
   if (maker.address !== DEPRECATED_HELIUM_BURN_ADDR) {
     const txnCountsRes = await fetch(
-      `${STAKEJOY_API_BASE_URL}/v1/accounts/${maker.address}/activity/count?filter_types=add_gateway_v1,assert_location_v1,assert_location_v2,token_burn_v1`,
+      `${API_BASE_URL}/v1/accounts/${maker.address}/activity/count?filter_types=add_gateway_v1,assert_location_v1,assert_location_v2,token_burn_v1`,
     )
     const txnCounts = await txnCountsRes.json()
     assertLocationTxns =
