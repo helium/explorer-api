@@ -45,12 +45,14 @@ export const hotspots = async (req, res) => {
           undefined,
           agg,
         )
+        const averageEarnings = await getCache('hotspots_avg_earnings')
         return {
           count,
           onlinePct,
           ownersCount,
           citiesCount,
           countriesCount,
+          averageEarnings,
         }
       },
       { expires: true, ttl: 60 },

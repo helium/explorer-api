@@ -37,4 +37,30 @@ const fetchNetworkRewards = async () => {
   return rewardsWithTarget.reverse()
 }
 
-module.exports = { fetchNetworkRewards }
+const fetchAverageHotspotEarnings = async (numBack = 1) => {
+  const { total: totalRewards } = await client.rewards.sum.get(
+    `-${numBack} day`,
+  )
+
+  const { hotspots: totalHotspots } = await client.stats.counts()
+
+  const hotspotRewardVarNames = [
+    'poc_challengers_percent',
+    'poc_challengees_percent',
+    'poc_witnesses_percent',
+    'dc_percent',
+  ]
+
+  const hotspotRewardVars = await client.vars.get(hotspotRewardVarNames)
+
+  const hotspotEligibleMultiplier = Object.keys(hotspotRewardVars).reduce(
+    (acc, key) => (acc += hotspotRewardVars[key]),
+    0,
+  )
+
+  const averageEarnings =
+    (totalRewards * hotspotEligibleMultiplier) / totalHotspots
+  return averageEarnings
+}
+
+module.exports = { fetchNetworkRewards, fetchAverageHotspotEarnings }
