@@ -45,7 +45,12 @@ export const hotspots = async (req, res) => {
           undefined,
           agg,
         )
-        const averageEarnings = await getCache('hotspots_avg_earnings')
+        const averageEarnings = await redisClient.range(
+          'hotspots_avg_earnings',
+          range,
+          undefined,
+          agg,
+        )
         return {
           count,
           onlinePct,

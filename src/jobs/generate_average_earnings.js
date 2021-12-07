@@ -8,9 +8,11 @@ const generateAverageEarnings = async () => {
 
   const averages = { day, week, month }
 
-  await setCache('hotspots_avg_earnings', JSON.stringify(averages), {
-    expires: false,
-  })
+  await redisClient.add(
+    new Sample('hotspots_avg_earnings', averages, now),
+    [],
+    0,
+  )
 }
 
 const run = async () => {
