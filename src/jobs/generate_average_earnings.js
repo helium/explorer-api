@@ -1,5 +1,5 @@
-const { setCache } = require('../helpers/cache')
 const { fetchAverageHotspotEarnings } = require('../helpers/rewards')
+const { setCache } = require('../helpers/cache')
 
 const generateAverageEarnings = async () => {
   const day = await fetchAverageHotspotEarnings()
@@ -8,11 +8,9 @@ const generateAverageEarnings = async () => {
 
   const averages = { day, week, month }
 
-  await redisClient.add(
-    new Sample('hotspots_avg_earnings', averages, now),
-    [],
-    0,
-  )
+  await setCache('avg_hotspot_earnings', JSON.stringify(averages), {
+    expires: false,
+  })
 }
 
 const run = async () => {

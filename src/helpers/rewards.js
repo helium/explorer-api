@@ -1,4 +1,6 @@
 const { getUnixTime } = require('date-fns')
+const { last } = require('lodash')
+const { getCache } = require('./cache')
 const { client, TAKE_MAX } = require('./client')
 
 const NETWORK_DATES = [
@@ -42,6 +44,13 @@ const fetchAverageHotspotEarnings = async (numBack = 1) => {
     `-${numBack} day`,
   )
 
+  const hotspotMetrics = await getCache('hotspots_metrics')
+
+  let onlineMultiplier = 1
+
+  if (hotspotMetrics?.onlinePct?.length > 0)
+    onlineMultiplier = last(hotspotMetrics.onlinePct).value
+
   const { hotspots: totalHotspots } = await client.stats.counts()
 
   const hotspotRewardVarNames = [
@@ -59,7 +68,9 @@ const fetchAverageHotspotEarnings = async (numBack = 1) => {
   )
 
   const averageEarnings =
-    (totalRewards * hotspotEligibleMultiplier) / totalHotspots
+    (totalRewards * hotspotEligibleMultiplier) /
+    (totalHotspots * onlineMultiplier)
+
   return averageEarnings
 }
 
