@@ -2,7 +2,7 @@ const { countBy, round, uniqBy } = require('lodash')
 const { sub, compareAsc, getUnixTime } = require('date-fns')
 const { Sample } = require('redis-time-series-ts')
 const { redisClient } = require('../helpers/redis')
-const { client } = require('../helpers/client')
+const { client, TAKE_MAX } = require('../helpers/client')
 
 const backfillHotspotsCount = async () => {
   const hotspots = await (await client.hotspots.list()).take(500000)
@@ -36,7 +36,7 @@ const backfillHotspotsCount = async () => {
 }
 
 const generateStats = async () => {
-  const hotspots = await (await client.hotspots.list()).take(500000)
+  const hotspots = await (await client.hotspots.list()).take(TAKE_MAX)
   const hotspotsCount = hotspots.length
   const onlineHotspotsCount = countBy(hotspots, 'status.online')?.online
   const onlinePct = round(onlineHotspotsCount / hotspotsCount, 4)

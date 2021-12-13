@@ -193,6 +193,11 @@ const validators = async (req, res) => {
   res.status(200).send(validators || [])
 }
 
+const averageHotspotEarnings = async (req, res) => {
+  const averageHotspotEarnings = await getCache('avg_hotspot_earnings')
+  res.status(200).send(averageHotspotEarnings || [])
+}
+
 const hexes = async (req, res) => {
   let hexes
   hexes = await getHexCache()
@@ -277,5 +282,6 @@ router.get('/hexes', hexes)
 router.get('/makers', makers)
 router.get('/cities/search', searchCities)
 router.get('/network/rewards', networkRewards)
+router.get('/network/rewards/averages', averageHotspotEarnings)
 
 module.exports = router
