@@ -46,10 +46,15 @@ const fetchAverageHotspotEarnings = async (numBack = 1) => {
 
   const hotspotMetrics = await getCache('hotspots_metrics')
 
-  let onlineMultiplier = 1
+  let onlineMultiplier
 
-  if (hotspotMetrics?.onlinePct?.length > 0)
+  if (hotspotMetrics?.onlinePct?.length > 0) {
     onlineMultiplier = last(hotspotMetrics.onlinePct).value
+  } else {
+    throw new Error(
+      'Cannot calculate average earnings because hotspot online percent value not set',
+    )
+  }
 
   const { hotspots: totalHotspots } = await client.stats.counts()
 
