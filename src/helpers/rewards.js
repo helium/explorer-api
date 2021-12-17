@@ -37,4 +37,4 @@ const fetchNetworkRewards = async () => {
   return rewardsWithTarget.reverse()
 }
 
-module.exports = { fetchNetworkRewards, fetchAverageHotspotEarnings }
+module.exports = { fetchNetworkRewards }
