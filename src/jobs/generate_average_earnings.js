@@ -1,12 +1,12 @@
-const { fetchAverageHotspotEarnings } = require('../helpers/rewards')
 const { setCache } = require('../helpers/cache')
+const fetch = require('node-fetch')
 
 const generateAverageEarnings = async () => {
   try {
-    const day = await fetchAverageHotspotEarnings()
-    const week = await fetchAverageHotspotEarnings(7)
-
-    const averages = { day, week }
+    const walletUrlBase = process.env.WALLET_URL_BASE
+    const averages = await (
+      await fetch(`${walletUrlBase}/ext/api/hotspots/earnings`)
+    ).json()
 
     await setCache('avg_hotspot_earnings', JSON.stringify(averages), {
       expires: false,
