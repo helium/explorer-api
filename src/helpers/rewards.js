@@ -1,6 +1,4 @@
 const { getUnixTime } = require('date-fns')
-const { last } = require('lodash')
-const { getCache } = require('./cache')
 const { client, TAKE_MAX } = require('./client')
 
 const NETWORK_DATES = [
@@ -39,44 +37,4 @@ const fetchNetworkRewards = async () => {
   return rewardsWithTarget.reverse()
 }
 
-const fetchAverageHotspotEarnings = async (numBack = 1) => {
-  const { total: totalRewards } = await client.rewards.sum.get(
-    `-${numBack} day`,
-  )
-
-  const hotspotMetrics = await getCache('hotspots_metrics')
-
-  let onlineMultiplier
-
-  if (hotspotMetrics?.onlinePct?.length > 0) {
-    onlineMultiplier = last(hotspotMetrics.onlinePct).value
-  } else {
-    throw new Error(
-      'Cannot calculate average earnings because hotspot online percent value not set',
-    )
-  }
-
-  const { hotspots: totalHotspots } = await client.stats.counts()
-
-  const hotspotRewardVarNames = [
-    'poc_challengers_percent',
-    'poc_challengees_percent',
-    'poc_witnesses_percent',
-    'dc_percent',
-  ]
-
-  const hotspotRewardVars = await client.vars.get(hotspotRewardVarNames)
-
-  const hotspotEligibleMultiplier = Object.keys(hotspotRewardVars).reduce(
-    (acc, key) => (acc += hotspotRewardVars[key]),
-    0,
-  )
-
-  const averageEarnings =
-    (totalRewards * hotspotEligibleMultiplier) /
-    (totalHotspots * onlineMultiplier)
-
-  return averageEarnings
-}
-
-module.exports = { fetchNetworkRewards, fetchAverageHotspotEarnings }
+module.exports = { fetchNetworkRewards }
