@@ -1,10 +1,11 @@
 import express from 'express'
 import Client from '@helium/http'
 import { errorResponse, successResponse } from '../helpers'
-import { getCache, getHexCache, setHexCache } from '../helpers/cache'
+import { getCache, setCache, getHexCache, setHexCache } from '../helpers/cache'
 import { redisClient, timestampRange, aggregation } from '../helpers/redis'
 import { fetchCitySearchGeometry } from '../helpers/cities'
 import { getGeo } from '../helpers/validators'
+const cors = require('cors')
 
 const router = express.Router()
 
@@ -269,6 +270,18 @@ const networkRewards = async (req, res) => {
   res.status(200).send(rewards || [])
 }
 
+const postHexEarnings = async (req, res) => {
+  if (req?.body?.updatedAt) {
+    await setCache('hexEarnings', JSON.stringify(req.body))
+  }
+  res.status(200).send()
+}
+
+const getHexEarnings = async (_req, res) => {
+  const hexEarnings = await getCache('hexEarnings')
+  res.status(200).send(hexEarnings || '')
+}
+
 router.get('/metrics/hotspots', hotspots)
 router.get('/metrics/blocks', blocks)
 router.get('/metrics/validators', validatorMetrics)
@@ -283,5 +296,11 @@ router.get('/makers', makers)
 router.get('/cities/search', searchCities)
 router.get('/network/rewards', networkRewards)
 router.get('/network/rewards/averages', averageHotspotEarnings)
+router.post(
+  '/hexes/earnings',
+  cors({ origin: 'https://hotspot-tileserver.herokuapp.com/' }),
+  postHexEarnings,
+)
+router.get('/hexes/earnings', getHexEarnings)
 
 module.exports = router
