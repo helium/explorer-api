@@ -27,7 +27,6 @@ const generateStats = async () => {
     [],
     0,
   )
-  await redisClient.add(new Sample('hotspots_count', hotspots, now), [], 0)
 
   await redisClient.add(
     new Sample('hotspots_online_pct', onlinePct, now),
