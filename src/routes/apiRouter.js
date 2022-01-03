@@ -5,7 +5,6 @@ import { getCache, setCache, getHexCache, setHexCache } from '../helpers/cache'
 import { redisClient, timestampRange, aggregation } from '../helpers/redis'
 import { fetchCitySearchGeometry } from '../helpers/cities'
 import { getGeo } from '../helpers/validators'
-const cors = require('cors')
 
 const router = express.Router()
 
@@ -271,9 +270,13 @@ const networkRewards = async (req, res) => {
 }
 
 const postHexEarnings = async (req, res) => {
-  if (req?.body?.updatedAt) {
-    await setCache('hexEarnings', JSON.stringify(req.body))
+  if (
+    req.hostname === 'hotspot-tileserver.herokuapp.com' &&
+    req.body?.updatedAt
+  ) {
+    await setCache('hexEarnings', JSON.stringify(req.body), { expires: false })
   }
+
   res.status(200).send()
 }
 
@@ -296,11 +299,7 @@ router.get('/makers', makers)
 router.get('/cities/search', searchCities)
 router.get('/network/rewards', networkRewards)
 router.get('/network/rewards/averages', averageHotspotEarnings)
-router.post(
-  '/hexes/earnings',
-  cors({ origin: 'https://hotspot-tileserver.herokuapp.com/' }),
-  postHexEarnings,
-)
+router.post('/hexes/earnings', postHexEarnings)
 router.get('/hexes/earnings', getHexEarnings)
 
 module.exports = router
