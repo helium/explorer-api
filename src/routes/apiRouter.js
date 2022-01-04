@@ -270,7 +270,19 @@ const networkRewards = async (req, res) => {
 }
 
 const postHexEarnings = async (req, res) => {
-  console.log(`hostname is asdf1234 - ${req.hostname}`)
+  const Origin = req.header('Origin') || ''
+  const origin = req.headers.origin || ''
+  const hostname = req.hostname || ''
+  const host = req.headers.host || ''
+  const Host = req.header('Host') || ''
+  console.log(
+    JSON.stringify(
+      { asdf1234: 'asdf1234', origin, Origin, hostname, host, Host },
+      null,
+      2,
+    ),
+  )
+
   if (
     req.hostname === 'hotspot-tileserver.herokuapp.com' &&
     req.body?.updatedAt
