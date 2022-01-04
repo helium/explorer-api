@@ -276,11 +276,14 @@ const postHexEarnings = async (req, res) => {
   const host = req.headers.host || ''
   const Host = req.header('Host') || ''
   console.log(
-    JSON.stringify(
-      { asdf1234: 'asdf1234', origin, Origin, hostname, host, Host },
-      null,
-      2,
-    ),
+    JSON.stringify({
+      asdf1234: 'asdf1234',
+      origin,
+      Origin,
+      hostname,
+      host,
+      Host,
+    }),
   )
 
   if (
