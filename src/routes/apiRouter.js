@@ -270,6 +270,7 @@ const networkRewards = async (req, res) => {
 }
 
 const postHexEarnings = async (req, res) => {
+  console.log(`hostname is asdf1234 - ${req.hostname}`)
   if (
     req.hostname === 'hotspot-tileserver.herokuapp.com' &&
     req.body?.updatedAt
