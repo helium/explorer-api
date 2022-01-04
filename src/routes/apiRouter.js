@@ -270,30 +270,20 @@ const networkRewards = async (req, res) => {
 }
 
 const postHexEarnings = async (req, res) => {
-  const Origin = req.header('Origin') || ''
-  const origin = req.headers.origin || ''
-  const hostname = req.hostname || ''
-  const host = req.headers.host || ''
-  const Host = req.header('Host') || ''
-  console.log(
-    JSON.stringify({
-      asdf1234: 'asdf1234',
-      origin,
-      Origin,
-      hostname,
-      host,
-      Host,
-    }),
-  )
+  const authKey = req.header('Authorization')
+  const tsAuthKey = process.env.TILESERVER_AUTH_KEY
 
-  if (
-    req.hostname === 'hotspot-tileserver.herokuapp.com' &&
-    req.body?.updatedAt
-  ) {
-    await setCache('hexEarnings', JSON.stringify(req.body), { expires: false })
+  if (tsAuthKey !== authKey) {
+    res.status(401).send()
+  } else {
+    if (req.body?.updatedAt) {
+      await setCache('hexEarnings', JSON.stringify(req.body), {
+        expires: false,
+      })
+    }
+
+    res.status(200).send()
   }
-
-  res.status(200).send()
 }
 
 const getHexEarnings = async (_req, res) => {
