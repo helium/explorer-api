@@ -5,6 +5,7 @@ import { getCache, setCache, getHexCache, setHexCache } from '../helpers/cache'
 import { redisClient, timestampRange, aggregation } from '../helpers/redis'
 import { fetchCitySearchGeometry } from '../helpers/cities'
 import { getGeo } from '../helpers/validators'
+import { getAuth } from '../controllers/auth_controller'
 
 const router = express.Router()
 
@@ -321,5 +322,6 @@ router.get('/network/rewards', networkRewards)
 router.get('/network/rewards/averages', averageHotspotEarnings)
 router.post('/hexes/earnings', postHexEarnings)
 router.get('/hexes/earnings', getHexEarnings)
+router.get('/auth', getAuth)
 
 module.exports = router
