@@ -1,12 +1,20 @@
 import express from 'express'
 import Client from '@helium/http'
+const Recaptcha = require('express-recaptcha').RecaptchaV3
 import { errorResponse, successResponse } from '../helpers'
 import { getCache, setCache, getHexCache, setHexCache } from '../helpers/cache'
 import { redisClient, timestampRange, aggregation } from '../helpers/redis'
 import { fetchCitySearchGeometry } from '../helpers/cities'
 import { getGeo } from '../helpers/validators'
+import { getAuth } from '../controllers/auth_controller'
 
 const router = express.Router()
+
+const recaptcha = new Recaptcha(
+  process.env.RECAPTCHA_SITE_KEY,
+  process.env.RECAPTCHA_SECRET_KEY,
+)
+
 
 export const hotspots = async (req, res) => {
   try {
@@ -321,5 +329,6 @@ router.get('/network/rewards', networkRewards)
 router.get('/network/rewards/averages', averageHotspotEarnings)
 router.post('/hexes/earnings', postHexEarnings)
 router.get('/hexes/earnings', getHexEarnings)
+router.get('/auth', recaptcha.middleware.verify, getAuth)
 
 module.exports = router
