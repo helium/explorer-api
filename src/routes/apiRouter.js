@@ -15,7 +15,6 @@ const recaptcha = new Recaptcha(
   process.env.RECAPTCHA_SECRET_KEY,
 )
 
-
 export const hotspots = async (req, res) => {
   try {
     const metrics = await getCache(
@@ -65,6 +64,12 @@ export const hotspots = async (req, res) => {
           undefined,
           agg,
         )
+        const rewardedCount = await redisClient.range(
+          'hotspots_rewarded',
+          range,
+          undefined,
+          agg,
+        )
         return {
           count,
           onlinePct,
@@ -73,6 +78,7 @@ export const hotspots = async (req, res) => {
           countriesCount,
           dataOnlyCount,
           onlineCount,
+          rewardedCount,
         }
       },
       { expires: true, ttl: 60 },
