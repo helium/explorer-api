@@ -53,7 +53,6 @@ const generateStats = async () => {
     d.setUTCSeconds(0)
     d.setUTCMinutes(0)
     const time = d.getTime() / 1000
-
     const hotspotsRewardedQuery = `SELECT COUNT(*) FROM (SELECT DISTINCT gateway FROM public.rewards where time >= ${time}) AS temporary;`
     const hotspotsRewarded = await pgClient.query(hotspotsRewardedQuery)
     if (hotspotsRewarded.rows.length && hotspotsRewarded.rows[0].count) {
@@ -73,6 +72,50 @@ const generateStats = async () => {
           dataTransferred.rows[0].count,
           now,
         ),
+        [],
+        0,
+      )
+    }
+
+    const challengeeQuery = `
+    SELECT COUNT(*)
+    FROM
+	    (SELECT DISTINCT ACTOR
+		    FROM PUBLIC.TRANSACTION_ACTORS
+		    WHERE BLOCK >=
+				    (SELECT HEIGHT
+					    FROM PUBLIC.BLOCKS
+					    WHERE TIME >= ${time}
+					    ORDER BY HEIGHT
+					    LIMIT 1)
+			    AND ACTOR_ROLE = 'challengee') AS TEMP;
+    `
+    const challengees = await pgClient.query(challengeeQuery)
+    if (challengees.rows.length && challengees.rows[0].count) {
+      await redisClient.add(
+        new Sample('hotspot_challengees', challengees.rows[0].count, now),
+        [],
+        0,
+      )
+    }
+
+    const witnessQuery = `
+    SELECT COUNT(*)
+    FROM
+	    (SELECT DISTINCT ACTOR
+		    FROM PUBLIC.TRANSACTION_ACTORS
+		    WHERE BLOCK >=
+				    (SELECT HEIGHT
+					    FROM PUBLIC.BLOCKS
+					    WHERE TIME >= ${time}
+					    ORDER BY HEIGHT
+					    LIMIT 1)
+			    AND ACTOR_ROLE = 'witness') AS TEMP;
+    `
+    const witnesses = await pgClient.query(witnessQuery)
+    if (witnesses.rows.length && witnesses.rows[0].count) {
+      await redisClient.add(
+        new Sample('hotspot_witnesses', witnesses.rows[0].count, now),
         [],
         0,
       )
