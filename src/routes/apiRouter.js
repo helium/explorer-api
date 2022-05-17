@@ -70,6 +70,24 @@ export const hotspots = async (req, res) => {
           undefined,
           agg,
         )
+        const dataTransferredCount = await redisClient.range(
+          'hotspots_data_transferred',
+          range,
+          undefined,
+          agg,
+        )
+        const witnessesCount = await redisClient.range(
+          'hotspot_witnesses',
+          range,
+          undefined,
+          agg,
+        )
+        const challengeesCount = await redisClient.range(
+          'hotspot_challengees',
+          range,
+          undefined,
+          agg,
+        )
         return {
           count,
           onlinePct,
@@ -79,6 +97,9 @@ export const hotspots = async (req, res) => {
           dataOnlyCount,
           onlineCount,
           rewardedCount,
+          dataTransferredCount,
+          witnessesCount,
+          challengeesCount,
         }
       },
       { expires: true, ttl: 60 },
