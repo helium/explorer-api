@@ -53,11 +53,26 @@ const generateStats = async () => {
     d.setUTCSeconds(0)
     d.setUTCMinutes(0)
     const time = d.getTime() / 1000
-    const query = `SELECT COUNT(*) FROM (SELECT DISTINCT gateway FROM public.rewards where time >= ${time}) AS temporary;`
-    const res = await pgClient.query(query)
-    if (res.rows.length && res.rows[0].count) {
+
+    const hotspotsRewardedQuery = `SELECT COUNT(*) FROM (SELECT DISTINCT gateway FROM public.rewards where time >= ${time}) AS temporary;`
+    const hotspotsRewarded = await pgClient.query(hotspotsRewardedQuery)
+    if (hotspotsRewarded.rows.length && hotspotsRewarded.rows[0].count) {
       await redisClient.add(
-        new Sample('hotspots_rewarded', res.rows[0].count, now),
+        new Sample('hotspots_rewarded', hotspotsRewarded.rows[0].count, now),
+        [],
+        0,
+      )
+    }
+
+    const dataTransferredQuery = `SELECT COUNT(*) FROM (SELECT DISTINCT gateway FROM public.packets where time >= ${time}) AS temporary;`
+    const dataTransferred = await pgClient.query(dataTransferredQuery)
+    if (dataTransferred.rows.length && dataTransferred.rows[0].count) {
+      await redisClient.add(
+        new Sample(
+          'hotspots_data_transferred',
+          dataTransferred.rows[0].count,
+          now,
+        ),
         [],
         0,
       )
