@@ -49,7 +49,7 @@ const generateStats = async () => {
     await pgClient.connect()
 
     const d = sub(now, { days: 1 })
-    const time = d.getTime() / 1000
+    const time = Math.trunc(d.getTime() / 1000)
     const hotspotsRewardedQuery = `SELECT COUNT(*) FROM (SELECT DISTINCT gateway FROM public.rewards where time >= ${time}) AS temporary;`
     const hotspotsRewarded = await pgClient.query(hotspotsRewardedQuery)
     if (hotspotsRewarded.rows.length && hotspotsRewarded.rows[0].count) {
