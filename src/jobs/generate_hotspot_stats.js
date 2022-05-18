@@ -3,6 +3,7 @@ const { Sample } = require('redis-time-series-ts')
 const { redisClient } = require('../helpers/redis')
 const { client } = require('../helpers/client')
 const { Client: PgClient } = require('pg')
+const { sub } = require('date-fns')
 
 const generateStats = async () => {
   const {
@@ -47,11 +48,7 @@ const generateStats = async () => {
     })
     await pgClient.connect()
 
-    const d = new Date()
-    d.setUTCHours(0)
-    d.setUTCMilliseconds(0)
-    d.setUTCSeconds(0)
-    d.setUTCMinutes(0)
+    const d = sub(now, { days: 1 })
     const time = d.getTime() / 1000
     const hotspotsRewardedQuery = `SELECT COUNT(*) FROM (SELECT DISTINCT gateway FROM public.rewards where time >= ${time}) AS temporary;`
     const hotspotsRewarded = await pgClient.query(hotspotsRewardedQuery)
