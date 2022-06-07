@@ -74,7 +74,7 @@ const generateStats = async () => {
       )
     }
 
-    const challengeeQuery = `
+    const challengeeQuery = (queryTime) => `
     SELECT COUNT(*)
     FROM
 	    (SELECT DISTINCT ACTOR
@@ -82,15 +82,26 @@ const generateStats = async () => {
 		    WHERE BLOCK >=
 				    (SELECT HEIGHT
 					    FROM PUBLIC.BLOCKS
-					    WHERE TIME >= ${time}
+					    WHERE TIME >= ${queryTime}
 					    ORDER BY HEIGHT
 					    LIMIT 1)
 			    AND ACTOR_ROLE = 'challengee') AS TEMP;
     `
-    const challengees = await pgClient.query(challengeeQuery)
+    const challengees = await pgClient.query(challengeeQuery(time))
     if (challengees.rows.length && challengees.rows[0].count) {
       await redisClient.add(
         new Sample('hotspot_challengees', challengees.rows[0].count, now),
+        [],
+        0,
+      )
+    }
+
+    const week = sub(now, { days: 7 })
+    const weekTime = Math.trunc(week.getTime() / 1000)
+    const challengeesWeek = await pgClient.query(challengeeQuery(weekTime))
+    if (challengeesWeek.rows.length && challengeesWeek.rows[0].count) {
+      await redisClient.add(
+        new Sample('hotspot_challengees_week', challengeesWeek.rows[0].count, now),
         [],
         0,
       )
