@@ -1,8 +1,8 @@
 const qs = require('qs')
 const fetch = require('node-fetch')
 
-const baseUrl = 'https://pocmap5g.helium.wtf/cell'
-const apiKey = process.env.FIVEG_HOTSPOT_API_TOKEN
+const baseUrl = process.env.CELL_HOTSPOT_BASE_URL
+const apiKey = process.env.CELL_HOTSPOT_API_TOKEN
 
 const makeRequest = async (route, params) => {
   const urlRoute = [baseUrl, route].join('/')
