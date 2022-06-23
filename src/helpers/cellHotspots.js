@@ -34,7 +34,7 @@ const makeRequest = async (route, params) => {
 }
 
 export const getLastHeartbeat = async (gatewayAddress) =>
-  await makeRequest(`heartbeats/hotspots/${gatewayAddress}/last`)
+  makeRequest(`heartbeats/hotspots/${gatewayAddress}/last`)
 
 
 module.exports = { getLastHeartbeat }
