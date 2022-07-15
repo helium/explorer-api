@@ -1,4 +1,5 @@
 const fetch = require('node-fetch')
+const { Sample } = require('redis-time-series-ts')
 const { redisClient } = require('../helpers/redis')
 
 const SAS_API_KEY = process.env.SAS_API_KEY
