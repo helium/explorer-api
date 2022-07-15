@@ -367,9 +367,49 @@ const getCellHotspotData = async (req, res) => {
   }
 }
 
+export const cellMetrics = async (req, res) => {
+  try {
+    const metrics = await getCache(
+      'cells_metrics',
+      async () => {
+        const range = timestampRange()
+        const agg = aggregation()
+        const count = await redisClient.range(
+          'cells_count',
+          range,
+          undefined,
+          agg,
+        )
+        const indoorCount = await redisClient.range(
+          'cells_indoor_count',
+          range,
+          undefined,
+          agg,
+        )
+        const outdoorCount = await redisClient.range(
+          'cells_outdoor_count',
+          range,
+          undefined,
+          agg,
+        )
+        return {
+          count,
+          indoorCount,
+          outdoorCount,
+        }
+      },
+      { expires: true, ttl: 60 },
+    )
+    return successResponse(req, res, metrics)
+  } catch (error) {
+    errorResponse(req, res, error.message, 500, error.errors)
+  }
+}
+
 router.get('/metrics/hotspots', hotspots)
 router.get('/metrics/blocks', blocks)
 router.get('/metrics/validators', validatorMetrics)
+router.get('/metrics/cells', cellMetrics)
 router.get('/validators', validators)
 router.get('/validators/search', searchValidators)
 router.get('/validators/versions', validatorVersions)
