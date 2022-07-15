@@ -33,8 +33,8 @@ const makeRequest = async (route, params) => {
   }
 }
 
-export const getLastHeartbeat = async (gatewayAddress) =>
-  makeRequest(`heartbeats/hotspots/${gatewayAddress}/last`)
+export const getCellHotspot = async (gatewayAddress) =>
+  makeRequest(`hotspots/${gatewayAddress}`)
 
 
-module.exports = { getLastHeartbeat }
+module.exports = { getCellHotspot }

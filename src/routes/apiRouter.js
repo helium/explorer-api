@@ -7,8 +7,8 @@ import { redisClient, timestampRange, aggregation } from '../helpers/redis'
 import { fetchCitySearchGeometry } from '../helpers/cities'
 import { getGeo } from '../helpers/validators'
 import { getAuth } from '../controllers/auth_controller'
-import { getLastHeartbeat } from '../helpers/cellHotspots'
-import camelcaseKeys from 'camelcase-keys';
+import { getCellHotspot } from '../helpers/cellHotspots'
+import camelcaseKeys from 'camelcase-keys'
 
 const router = express.Router()
 
@@ -349,15 +349,15 @@ const getHexEarnings = async (_req, res) => {
   res.status(200).send(hexEarnings || '')
 }
 
-const getLastCellHeartbeat = async (req, res) => {
+const getCellHotspotData = async (req, res) => {
   const gatewayAddress = req.params.id
   try {
-    const lastHeartbeat = await getCache(
-      `last5GHotspotHeartbeat:${gatewayAddress}`,
-      async () => getLastHeartbeat(gatewayAddress),
+    const cellHotspot = await getCache(
+      `cellHotspot:${gatewayAddress}`,
+      async () => getCellHotspot(gatewayAddress),
       { expires: true, ttl: 60 },
     )
-    res.status(200).send(camelcaseKeys(lastHeartbeat) || {})
+    res.status(200).send(camelcaseKeys(cellHotspot) || {})
   } catch (error) {
     if (error && error.status) {
       res.status(error.status).send(error.message)
@@ -384,6 +384,6 @@ router.get('/network/rewards/averages', averageHotspotEarnings)
 router.post('/hexes/earnings', postHexEarnings)
 router.get('/hexes/earnings', getHexEarnings)
 router.get('/auth', recaptcha.middleware.verify, getAuth)
-router.get('/cell/heartbeats/hotspots/:id/last', getLastCellHeartbeat)
+router.get('/cell/hotspots/:id', getCellHotspotData)
 
 module.exports = router
