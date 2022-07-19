@@ -71,6 +71,7 @@ const fetchGeocodedCells = async () => {
 
 const countCities = (geocodedCells) => {
   const uniqueCities = new Set()
+  const uniqueStates = new Set()
   for (const cell of geocodedCells) {
     const city = cell?.geocode?.address_components?.find((c) =>
       c.types.includes('locality'),
@@ -78,12 +79,16 @@ const countCities = (geocodedCells) => {
     const state = cell?.geocode?.address_components?.find((c) =>
       c.types.includes('administrative_area_level_1'),
     )?.short_name
+    const country = cell?.geocode?.address_components?.find((c) =>
+      c.types.includes('country'),
+    )?.short_name
 
-    if (city && state) {
+    if (country === 'US' && city !== undefined && state !== undefined) {
       uniqueCities.add([city, state].join(','))
+      uniqueStates.add(state)
     }
   }
-  return uniqueCities.size
+  return { cities: uniqueCities.size, states: uniqueStates.size }
 }
 
 const run = async () => {
@@ -91,12 +96,13 @@ const run = async () => {
 
   const { subTotal, catA, catB } = await fetchMetrics()
   const cells = await fetchGeocodedCells()
-  const citiesCount = countCities(cells)
+  const { cities, states } = countCities(cells)
 
   await redisClient.add(new Sample('cells_count', subTotal, now), [], 0)
   await redisClient.add(new Sample('cells_indoor_count', catA, now), [], 0)
   await redisClient.add(new Sample('cells_outdoor_count', catB, now), [], 0)
-  await redisClient.add(new Sample('cells_cities_count', citiesCount, now), [], 0)
+  await redisClient.add(new Sample('cells_cities_count', cities, now), [], 0)
+  await redisClient.add(new Sample('cells_states_count', states, now), [], 0)
 
   return process.exit(0)
 }
