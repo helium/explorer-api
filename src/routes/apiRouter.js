@@ -392,10 +392,17 @@ export const cellMetrics = async (req, res) => {
           undefined,
           agg,
         )
+        const citiesCount = await redisClient.range(
+          'cells_cities_count',
+          range,
+          undefined,
+          agg,
+        )
         return {
           count,
           indoorCount,
           outdoorCount,
+          citiesCount,
         }
       },
       { expires: true, ttl: 60 },
