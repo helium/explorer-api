@@ -295,8 +295,16 @@ const searchValidators = async (req, res) => {
 }
 
 const makers = async (req, res) => {
+  const { type } = req.query
   const makers = await getCache('makers')
-  res.status(200).send(makers || [])
+  // TODO this should be more sophisticated
+  if (type === '5g') {
+    const makerIds = [19, 67]
+    const makers5g = (makers || []).filter(m => makerIds.includes(m.id))
+    res.status(200).send(makers5g)
+  } else {
+    res.status(200).send(makers || [])
+  }
 }
 
 const searchCities = async (req, res) => {
