@@ -379,12 +379,12 @@ const getCellHotspotData = async (req, res) => {
 const getCellLatestSpeedtestData = async (req, res) => {
   const gatewayAddress = req.params.id
   try {
-    const cellHotspot = await getCache(
+    const cellSpeedtest = await getCache(
       `cellLatestSpeedtest:${gatewayAddress}`,
       async () => getCellLatestSpeedtest(gatewayAddress),
       { expires: true, ttl: 60 },
     )
-    res.status(200).send(camelcaseKeys(cellHotspot) || {})
+    res.status(200).send(camelcaseKeys(cellSpeedtest) || {})
   } catch (error) {
     if (error && error.status) {
       res.status(error.status).send(error.message)
