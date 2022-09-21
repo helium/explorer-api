@@ -2,7 +2,6 @@ const qs = require('qs')
 const fetch = require('node-fetch')
 
 const baseUrl = process.env.MOBILE_API_BASE_URL
-const user = process.env.MOBILE_API_USER
 const apiKey = process.env.MOBILE_API_TOKEN
 
 const makeRequest = async (route, params) => {
@@ -15,7 +14,7 @@ const makeRequest = async (route, params) => {
   const response = await fetch(url, {
     method: 'GET',
     headers: {
-      'Authorization': 'Basic ' + Buffer.from(user + ":" + apiKey).toString('base64'),
+      'Authorization': `Basic ${apiKey}`,
       'Cache-Control': 'no-cache',
       'Content-Type': 'application/json',
     },
