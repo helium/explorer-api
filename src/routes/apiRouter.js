@@ -8,7 +8,7 @@ import { fetchCitySearchGeometry } from '../helpers/cities'
 import { getGeo } from '../helpers/validators'
 import { getAuth } from '../controllers/auth_controller'
 import { getCellHotspot } from '../helpers/cellHotspots'
-import { getCellLatestSpeedtest } from '../helpers/mobileApi'
+import { getCellLatestSpeedtest, getHotspotCells } from '../helpers/mobileApi'
 import camelcaseKeys from 'camelcase-keys'
 
 const router = express.Router()
@@ -376,6 +376,28 @@ const getCellHotspotData = async (req, res) => {
   }
 }
 
+const getCellsForHotspot = async (req, res) => {
+  const hotspotPubKey = req.params.id
+  try {
+    const hotspotCells = await getCache(
+      `cellsForHotspot:${hotspotPubKey}`,
+      async () => getHotspotCells(hotspotPubKey),
+      { expires: true, ttl: 60 },
+    )
+    const result = hotspotCells && hotspotCells.length
+      ? hotspotCells.map((cell) => camelcaseKeys(cell))
+      : []
+    res.status(200).send(result)
+  } catch (error) {
+    console.log(error)
+    if (error && error.status) {
+      res.status(error.status).send(error.message)
+    } else {
+      res.status(500).send()
+    }
+  }
+}
+
 const getCellLatestSpeedtestData = async (req, res) => {
   const gatewayAddress = req.params.id
   try {
@@ -466,6 +488,7 @@ router.post('/hexes/earnings', postHexEarnings)
 router.get('/hexes/earnings', getHexEarnings)
 router.get('/auth', recaptcha.middleware.verify, getAuth)
 router.get('/cell/hotspots/:id', getCellHotspotData)
+router.get('/cell/hotspots/:id/cells', getCellsForHotspot)
 router.get('/cell/hotspots/:id/latest-speedtest', getCellLatestSpeedtestData)
 
 module.exports = router
