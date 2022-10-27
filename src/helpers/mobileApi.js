@@ -36,7 +36,10 @@ const makeRequest = async (route, params) => {
 export const getCellLatestSpeedtest = async (address) =>
   makeRequest(`latest-speed-tests/${address}`)
 
+export const getCellAvgSpeedtest = async (address) =>
+  makeRequest(`latest-avg-speed-tests/${address}`)
+
 export const getHotspotCells = async (address) =>
   makeRequest(`smallcells/hotspot/${address}`)
 
-module.exports = { getCellLatestSpeedtest, getHotspotCells }
+module.exports = { getCellLatestSpeedtest, getHotspotCells, getCellAvgSpeedtest }
