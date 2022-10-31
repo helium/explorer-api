@@ -8,7 +8,7 @@ import { fetchCitySearchGeometry } from '../helpers/cities'
 import { getGeo } from '../helpers/validators'
 import { getAuth } from '../controllers/auth_controller'
 import { getCellHotspot } from '../helpers/cellHotspots'
-import { getCellLatestSpeedtest, getHotspotCells } from '../helpers/mobileApi'
+import { getCellAvgSpeedtest, getCellLatestSpeedtest, getHotspotCells } from '../helpers/mobileApi'
 import camelcaseKeys from 'camelcase-keys'
 
 const router = express.Router()
@@ -416,6 +416,24 @@ const getCellLatestSpeedtestData = async (req, res) => {
   }
 }
 
+const getCellAvgSpeedtestData = async (req, res) => {
+  const gatewayAddress = req.params.id
+  try {
+    const avgSpeedtest = await getCache(
+      `cellAvgSpeedtest:${gatewayAddress}`,
+      async () => getCellAvgSpeedtest(gatewayAddress),
+      { expires: true, ttl: 60 },
+    )
+    res.status(200).send(camelcaseKeys(avgSpeedtest) || {})
+  } catch (error) {
+    if (error && error.status) {
+      res.status(error.status).send(error.message)
+    } else {
+      res.status(500).send()
+    }
+  }
+}
+
 export const cellMetrics = async (req, res) => {
   try {
     const metrics = await getCache(
@@ -490,5 +508,6 @@ router.get('/auth', recaptcha.middleware.verify, getAuth)
 router.get('/cell/hotspots/:id', getCellHotspotData)
 router.get('/cell/hotspots/:id/cells', getCellsForHotspot)
 router.get('/cell/hotspots/:id/latest-speedtest', getCellLatestSpeedtestData)
+router.get('/cell/hotspots/:id/avg-speedtest', getCellAvgSpeedtestData)
 
 module.exports = router
