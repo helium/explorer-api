@@ -8,7 +8,13 @@ import { fetchCitySearchGeometry } from '../helpers/cities'
 import { getGeo } from '../helpers/validators'
 import { getAuth } from '../controllers/auth_controller'
 import { getCellHotspot } from '../helpers/cellHotspots'
-import { getCellAvgSpeedtest, getCellLatestSpeedtest, getHotspotCells } from '../helpers/mobileApi'
+import {
+    getCellAvgSpeedtest,
+    getCellLatestSpeedtest,
+    getCellRewards,
+    getHotspotCellRewards,
+    getHotspotCells
+} from '../helpers/mobileApi'
 import camelcaseKeys from 'camelcase-keys'
 
 const router = express.Router()
@@ -434,6 +440,47 @@ const getCellAvgSpeedtestData = async (req, res) => {
   }
 }
 
+const getCellHotspotRewardData = async (req, res) => {
+    const hotspotAddress = req.params.id
+    const maxTime = req.query.max_date
+    const minTime = req.query.min_date
+    try {
+        const rewards = await getCache(
+            `cellHotspotRewardData:${hotspotAddress}/${maxTime}/${minTime}`,
+            async () => getHotspotCellRewards(hotspotAddress, maxTime, minTime),
+            { expires: true, ttl: 300 },
+        )
+        res.status(200).send(camelcaseKeys(rewards) || {})
+    } catch (error) {
+        if (error && error.status) {
+            res.status(error.status).send(error.message)
+        } else {
+            res.status(500).send()
+        }
+    }
+}
+
+const getCellRewardData = async (req, res) => {
+    const hotspotAddress = req.params.id
+    const cbsd = req.params.cbsd
+    const maxTime = req.query.max_date
+    const minTime = req.query.min_date
+    try {
+        const rewards = await getCache(
+            `cellRewardData:${hotspotAddress}/${cbsd}/${maxTime}/${minTime}`,
+            async () => getCellRewards(hotspotAddress, cbsd, maxTime, minTime),
+            { expires: true, ttl: 300 },
+        )
+        res.status(200).send(camelcaseKeys(rewards) || {})
+    } catch (error) {
+        if (error && error.status) {
+            res.status(error.status).send(error.message)
+        } else {
+            res.status(500).send()
+        }
+    }
+}
+
 export const cellMetrics = async (req, res) => {
   try {
     const metrics = await getCache(
@@ -509,5 +556,7 @@ router.get('/cell/hotspots/:id', getCellHotspotData)
 router.get('/cell/hotspots/:id/cells', getCellsForHotspot)
 router.get('/cell/hotspots/:id/latest-speedtest', getCellLatestSpeedtestData)
 router.get('/cell/hotspots/:id/avg-speedtest', getCellAvgSpeedtestData)
+router.get('/cell/hotspots/:id/rewards', getCellHotspotRewardData)
+router.get('/cell/hotspots/:id/cells/:cbsd/rewards', getCellRewardData)
 
 module.exports = router
