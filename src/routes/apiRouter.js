@@ -448,7 +448,7 @@ const getCellHotspotRewardData = async (req, res) => {
         const rewards = await getCache(
             `cellHotspotRewardData:${hotspotAddress}/${maxTime}/${minTime}`,
             async () => getHotspotCellRewards(hotspotAddress, maxTime, minTime),
-            { expires: true, ttl: 60 },
+            { expires: true, ttl: 300 },
         )
         res.status(200).send(camelcaseKeys(rewards) || {})
     } catch (error) {
@@ -469,7 +469,7 @@ const getCellRewardData = async (req, res) => {
         const rewards = await getCache(
             `cellRewardData:${hotspotAddress}/${cbsd}/${maxTime}/${minTime}`,
             async () => getCellRewards(hotspotAddress, cbsd, maxTime, minTime),
-            { expires: true, ttl: 60 },
+            { expires: true, ttl: 300 },
         )
         res.status(200).send(camelcaseKeys(rewards) || {})
     } catch (error) {
