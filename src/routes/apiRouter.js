@@ -444,11 +444,9 @@ const getCellHotspotRewardData = async (req, res) => {
     const hotspotAddress = req.params.id
     const maxTime = req.query.max_date
     const minTime = req.query.min_date
-
-    console.log(hotspotAddress, maxTime, minTime)
     try {
         const rewards = await getCache(
-            `cellHotspotRewardData:${hotspotAddress}`,
+            `cellHotspotRewardData:${hotspotAddress}/${maxTime}/${minTime}`,
             async () => getHotspotCellRewards(hotspotAddress, maxTime, minTime),
             { expires: true, ttl: 60 },
         )
@@ -469,7 +467,7 @@ const getCellRewardData = async (req, res) => {
     const minTime = req.query.min_date
     try {
         const rewards = await getCache(
-            `cellRewardData:${cbsd}`,
+            `cellRewardData:${hotspotAddress}/${cbsd}/${maxTime}/${minTime}`,
             async () => getCellRewards(hotspotAddress, cbsd, maxTime, minTime),
             { expires: true, ttl: 60 },
         )

@@ -46,6 +46,6 @@ export const getHotspotCellRewards = async (address, maxTime, minTime) =>
     makeRequest(`/v1/hotspots/${address}/radio-rewards-by-day`, { max_date: maxTime, min_date: minTime })
 
 export const getCellRewards = async (address, cbsd, maxTime, minTime) =>
-    makeRequest(`/v1/hotspots/${address}/radios/${cbsd}/rewards-by-day?max_date=${maxTime}&min_date=${minTime}`)
+    makeRequest(`/v1/hotspots/${address}/radios/${cbsd}/rewards-by-day`, { max_date: maxTime, min_date: minTime })
 
 module.exports = { getCellLatestSpeedtest, getHotspotCells, getCellAvgSpeedtest, getHotspotCellRewards, getCellRewards }
